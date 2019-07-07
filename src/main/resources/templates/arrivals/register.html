@@ -1,0 +1,36 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/uswds.css">
+</head>
+<body>
+<header class="usa-header usa-header--basic" role="banner">
+    <div class="usa-nav-container">
+        <div class="usa-navbar">
+            <div class="usa-logo" id="basic-logo">
+                <em class="usa-logo__text"><a href="/" title="Home" aria-label="Home">Vamos</a></em>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="usa-header usa-header--basic" role="banner">
+    <form class="usa-form" action="/arrivals/post-register" method="post" >
+        <fieldset class="usa-fieldset">
+            <legend class="usa-legend">Register</legend>
+
+            <label class="usa-label" for="first-name">First name</label>
+            <input class="usa-input" id="first-name" name="first-name" type="text" required aria-required="true">
+
+            <label class="usa-label" for="last-name">Last name</label>
+            <input class="usa-input" id="last-name" name="last-name" type="text" required aria-required="true">
+
+            <input class="usa-button" type="submit" value="Register">
+
+        </fieldset>
+    </form>
+</div>
+</body>
+</html>

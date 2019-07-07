@@ -1,0 +1,32 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/uswds.css">
+</head>
+<body>
+<header class="usa-header usa-header--basic" role="banner">
+    <div class="usa-nav-container">
+        <div class="usa-navbar">
+            <div class="usa-logo" id="basic-logo">
+                <em class="usa-logo__text"><a href="/" title="Home" aria-label="Home">Vamos</a></em>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="usa-header usa-header--basic" role="banner">
+    <form class="usa-form" action="/arrivals/post-register" method="post" >
+        <fieldset class="usa-fieldset">
+            <legend class="usa-legend">Thank you for registering, <span th:text="${fname}" /> <span th:text="${lname}" />.</legend>
+
+            <ul>
+                <li>Your check in PIN is <span th:text="${pin}" /> </li>
+                <li>Please navigate to the <a href="/arrivals/">sign in</a> page</li>
+            </ul>
+        </fieldset>
+    </form>
+</div>
+</body>
+</html>

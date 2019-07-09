@@ -17,18 +17,17 @@
     </div>
 </header>
 <div class="usa-header usa-header--basic" role="banner">
-    <form class="usa-form" action="/arrivals/post-register" method="post" >
+    <form class="usa-form" action="/arrivals/signin/post" method="post">
         <fieldset class="usa-fieldset">
-            <legend class="usa-legend">Register</legend>
+            <legend class="usa-legend">Sign In</legend>
 
-            <label class="usa-label" for="first-name">First name</label>
-            <input class="usa-input" id="first-name" name="first-name" type="text" required aria-required="true">
+            <label class="usa-label" for="checkin-pin">Check In PIN</label>
+            <input class="usa-input" id="checkin-pin" maxlength="4" name="checkin-pin" required aria-required="true">
+            <p class="usa-form__note">
+                <span title="Register-note" aria-controls="checkin-pin"><ul><li>Don't have one? Please <a href="/arrivals/register">Register</a></li></ul></span>
+            </p>
 
-            <label class="usa-label" for="last-name">Last name</label>
-            <input class="usa-input" id="last-name" name="last-name" type="text" required aria-required="true">
-
-            <input class="usa-button" type="submit" value="Register">
-
+            <input class="usa-button" type="submit" value="Sign In">
         </fieldset>
     </form>
 </div>

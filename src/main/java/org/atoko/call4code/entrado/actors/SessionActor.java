@@ -1,17 +1,24 @@
 package org.atoko.call4code.entrado.actors;
 
 
+import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import akka.pattern.Patterns;
+import com.sun.tools.javac.util.List;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import scala.concurrent.Future;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
+import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -30,20 +37,45 @@ public class SessionActor extends UntypedActor {
 
     // constructor
 
+    private void onReceive(AddPerson addPerson) {
+        getContext().actorOf(
+                PersonActor.props(
+                        addPerson.fname,
+                        addPerson.lname,
+                        addPerson.pin,
+                        addPerson.id
+                ),
+                PERSON_PREFIX + addPerson.id);
+        getSender().tell(true, getSelf());
+    }
+
+    private void onReceive(TellPersonList tellListCommand) {
+        ArrayList<Mono<PersonDetails>> tellCommands = new ArrayList<>();
+        PersonActor.TellDetails tellCommand = new PersonActor.TellDetails();
+        Iterable<ActorRef> children = getContext().getChildren();
+        children.forEach((c) -> {
+            tellCommands.add(
+                    toMono(Patterns.ask(c, tellCommand, 3L)).map((o) -> {return (PersonDetails)o;})
+            );
+        });
+
+        if (!tellCommands.isEmpty()) {
+            Mono.zip(tellCommands, List::from)
+                .doOnSuccess((detailList) -> {
+                    getSender().tell(detailList, getSelf());
+                }).block();
+        } else {
+            getSender().tell(Collections.EMPTY_LIST, getSelf());
+        }
+    }
+
     @Override
     public void onReceive(Object message) throws Throwable {
         if (message instanceof AddPerson) {
-            AddPerson ap = (AddPerson)message;
-            getContext().actorOf(PersonActor.props(ap.fname, ap.lname, ap.pin, ap.id), PERSON_PREFIX + ((AddPerson) message).id);
-            getSender().tell(true, getSelf());
+            onReceive((AddPerson)message);
         } else if (message instanceof TellPersonList) {
-            ArrayList<PersonDetails> list = new ArrayList<PersonDetails>();
-            getContext().getChildren().forEach((c) -> {
-
-            });
-            getSender().tell(list, getSelf());
-
-        }else {
+            onReceive((TellPersonList) message);
+        } else {
             unhandled(message);
         }
     }

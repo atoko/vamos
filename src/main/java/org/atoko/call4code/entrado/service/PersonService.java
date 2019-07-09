@@ -18,15 +18,18 @@ import scala.concurrent.duration.FiniteDuration;
 
 import scala.compat.java8.FutureConverters;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
+import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 
 @Component
 public class PersonService {
 
+    public static final SessionActor.TellPersonList tellPersonListCommand = new SessionActor.TellPersonList();
     @Autowired
     private SessionService sessionService;
 
@@ -51,13 +54,16 @@ public class PersonService {
                 return (PersonDetails)response;
             }
             return new PersonDetails("none", "none", "none");
-        }).onErrorReturn(
-                new PersonDetails("none", "none", "error"));
+        });
     }
 
-    private <T> Mono<T> toMono(Future<T> future) {
-        return Mono.fromFuture(FutureConverters.toJava(future).toCompletableFuture());
+    public Mono<List<PersonDetails>> getAll() {
+        return toMono(Patterns.ask(sessionService.get(), tellPersonListCommand, 5000))
+            .map((response) -> {
+                if (response instanceof List) {
+                    return (List<PersonDetails>)response;
+                }
+                return Collections.emptyList();
+            });
     }
-
-
 }

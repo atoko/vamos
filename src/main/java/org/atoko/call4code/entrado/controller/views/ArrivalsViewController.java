@@ -1,41 +1,36 @@
-package org.atoko.call4code.entrado.controller;
+package org.atoko.call4code.entrado.controller.views;
 
-import org.atoko.call4code.entrado.model.PersonDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.RouterFunctions;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
-@Controller()
+@Controller
 @RequestMapping("/arrivals")
 public class ArrivalsViewController {
 
     @Autowired
     private PersonService personService;
 
+    @Autowired
+    private PersonService sessionService;
 
-    @RequestMapping(value = {"/"})
-    public String index(
-            @Value("classpath:/templates/index.html") Resource html
-    )
+
+
+    @RequestMapping(value = {"/", "/signin"})
+    public String index()
     {
-        return "index";
+        return "signin/index";
     }
 
-    @PostMapping("/post-signin")
+    @PostMapping("/signin/post")
     public Mono<String> postSignin(
             ServerWebExchange webExchange,
             Model model
@@ -48,21 +43,19 @@ public class ArrivalsViewController {
                         model.addAttribute("fname", person.fname);
                         model.addAttribute("lname", person.lname);
                         model.addAttribute("time", new Date());
-                        return "arrivals/post-signin";
-                    });
+                        return "signin/index";
+                    }).onErrorReturn("signin");
         });
 
     }
 
     @RequestMapping(value = {"/register"})
-    public String register(
-            @Value("classpath:/templates/arrivals/register.html") Resource html
-    )
+    public String register()
     {
-        return "arrivals/register";
+        return "arrivals/register/index";
     }
 
-    @PostMapping("/post-register")
+    @PostMapping("/register/post")
     public Mono<String> postRegister(
             ServerWebExchange webExchange,
             Model model
@@ -77,23 +70,24 @@ public class ArrivalsViewController {
                         model.addAttribute("fname", fname);
                         model.addAttribute("lname", lname);
                         model.addAttribute("pin", person.id);
-                        return "arrivals/post-register";
+                        return "arrivals/register/post";
                     });
         });
 
     }
 
+    static private ObjectMapper objectMapper = new ObjectMapper();
     @RequestMapping(value = {"/list"})
-    public String list(
-            @Value("classpath:/templates/arrivals/list.html") Resource html
+    public Mono<String> list(
+            Model model
     )
     {
-        return "arrivals/list";
-    }
+        return personService.getAll().map((people) -> {
+            try {
+                model.addAttribute("people", objectMapper.writeValueAsString(people));
+            } catch (Exception e) {}
 
-
-    @Bean
-    public RouterFunction<ServerResponse> assets() {
-        return RouterFunctions.resources("/assets/**", new ClassPathResource("assets/"));
+            return "arrivals/list/index";
+        });
     }
 }

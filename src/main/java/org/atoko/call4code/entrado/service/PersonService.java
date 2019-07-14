@@ -1,23 +1,19 @@
 package org.atoko.call4code.entrado.service;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.pattern.Patterns;
-import akka.util.Timeout;
 import org.atoko.call4code.entrado.actors.PersonActor;
 import org.atoko.call4code.entrado.actors.SessionActor;
-import org.atoko.call4code.entrado.config.SpringExtension;
+import org.atoko.call4code.entrado.exception.ResponseCodeException;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
-
-import scala.compat.java8.FutureConverters;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,18 +27,17 @@ import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 public class PersonService {
 
     public static final SessionActor.TellPersonList tellPersonListCommand = new SessionActor.TellPersonList();
+    FiniteDuration duration = FiniteDuration.create(1, TimeUnit.SECONDS);
     @Autowired
     private SessionService sessionService;
-
-
-    FiniteDuration duration = FiniteDuration.create(1, TimeUnit.SECONDS);
-
     private Props props = null;
 
     public Mono<PersonDetails> create(String fname, String lname, String pin) {
         String id = UUID.randomUUID().toString().substring(0, 4);
         Future<Object> create = Patterns.ask(sessionService.get(), new SessionActor.AddPerson(fname, lname, pin, id), 5000);
-        return toMono(create).map((na) -> { return new PersonDetails(fname, lname, id); });
+        return toMono(create).map((na) -> {
+            return new PersonDetails(fname, lname, id);
+        });
     }
 
 
@@ -57,23 +52,25 @@ public class PersonService {
 
     private Mono<PersonDetails> getById(String id) {
         return toMono(sessionService.child(PERSON_PREFIX + id).resolveOne(duration))
-            .flatMap((ref) -> toMono(Patterns.ask(ref, new PersonActor.TellDetails(), 5000))).map((response) -> {
-                if (response instanceof PersonDetails) {
-                    return  ((PersonDetails)response);
-                }
-
-                //throw not found
-                return new PersonDetails("none", "none", "none");
-            });
+                .onErrorResume((t) -> {
+                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND", "Person was not found");
+                })
+                .flatMap((ref) -> toMono(Patterns.ask(ref, new PersonActor.TellDetails(), 5000))).map((response) -> {
+                    if (response instanceof PersonDetails) {
+                        return ((PersonDetails) response);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.LOOP_DETECTED, "Could not process message");
+                    }
+                });
     }
 
     private Mono<List<PersonDetails>> getAll() {
         return toMono(Patterns.ask(sessionService.get(), tellPersonListCommand, 5000))
-            .map((response) -> {
-                if (response instanceof List) {
-                    return (List<PersonDetails>)response;
-                }
-                return Collections.emptyList();
-            });
+                .map((response) -> {
+                    if (response instanceof List) {
+                        return (List<PersonDetails>) response;
+                    }
+                    return Collections.emptyList();
+                });
     }
 }

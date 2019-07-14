@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class PersonActor extends UntypedActor {
+public class QueueActor extends UntypedActor {
     public static String PERSON_PREFIX = "person-";
     private final String id;
     private final String fname;
     private final String lname;
     private final String pin;
 
-    public PersonActor(String fname, String lname, String pin, String id) {
+    public QueueActor(String fname, String lname, String pin, String id) {
         this.id = id;
         this.fname = fname;
         this.lname = lname;
@@ -26,7 +26,7 @@ public class PersonActor extends UntypedActor {
     public static Props props(String fname, String lname, String pin, String id) {
         // You need to specify the actual type of the returned actor
         // since Java 8 lambdas have some runtime type information erased
-        return Props.create(PersonActor.class, () -> new PersonActor(fname, lname, pin, id));
+        return Props.create(QueueActor.class, () -> new QueueActor(fname, lname, pin, id));
     }
 
     // constructor

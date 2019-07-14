@@ -1,7 +1,6 @@
 package org.atoko.call4code.entrado.controller.views;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.var;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +17,14 @@ import java.util.Date;
 @RequestMapping("/arrivals")
 public class ArrivalsViewController {
 
+    static private ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private PersonService personService;
-
     @Autowired
     private PersonService sessionService;
 
-
-
     @RequestMapping(value = {"/", "/signin"})
-    public String index()
-    {
+    public String index() {
         return "signin/index";
     }
 
@@ -53,8 +49,7 @@ public class ArrivalsViewController {
     }
 
     @RequestMapping(value = {"/register"})
-    public String register()
-    {
+    public String register() {
         return "arrivals/register/index";
     }
 
@@ -79,16 +74,15 @@ public class ArrivalsViewController {
 
     }
 
-    static private ObjectMapper objectMapper = new ObjectMapper();
     @RequestMapping(value = {"/list"})
     public Mono<String> list(
             Model model
-    )
-    {
+    ) {
         return personService.get(null).map((people) -> {
             try {
                 model.addAttribute("people", objectMapper.writeValueAsString(people));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
             return "arrivals/list/index";
         });

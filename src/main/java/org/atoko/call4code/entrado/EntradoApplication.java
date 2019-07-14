@@ -10,17 +10,18 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class EntradoApplication {
-	@Autowired
-	private ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationContext applicationContext;
 
-	@Bean
-	public ActorSystem actorSystem() {
-		ActorSystem system = ActorSystem.create("akka-spring-demo");
-		SpringExtension.SPRING_EXTENSION_PROVIDER.get(system).initialize(applicationContext);
-		return system;
-	}
-	public static void main(String[] args) {
-		SpringApplication.run(EntradoApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(EntradoApplication.class, args);
+    }
+
+    @Bean
+    public ActorSystem actorSystem() {
+        ActorSystem system = ActorSystem.create("akka-spring-demo");
+        SpringExtension.SPRING_EXTENSION_PROVIDER.get(system).initialize(applicationContext);
+        return system;
+    }
 
 }

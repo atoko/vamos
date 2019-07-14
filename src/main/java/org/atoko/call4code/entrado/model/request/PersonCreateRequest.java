@@ -6,8 +6,8 @@ import lombok.Data;
 public class PersonCreateRequest {
 
 
-    private String firstName;
     private final ThreadLocal<String> lastName = new ThreadLocal<String>();
+    private String firstName;
     private String pin;
 
     public PersonCreateRequest() {

@@ -15,6 +15,7 @@ public class PersonDetails {
 
     }
 
-    public PersonDetails() {}
+    public PersonDetails() {
+    }
 
 }

@@ -25,14 +25,14 @@ import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 public class SessionActor extends UntypedActor {
     private final PersonService personService;
 
+    public SessionActor(PersonService personService) {
+        this.personService = personService;
+    }
+
     public static Props props(PersonService personService) {
         // You need to specify the actual type of the returned actor
         // since Java 8 lambdas have some runtime type information erased
         return Props.create(SessionActor.class, () -> new SessionActor(personService));
-    }
-
-    public SessionActor(PersonService personService) {
-        this.personService = personService;
     }
 
     // constructor
@@ -55,15 +55,17 @@ public class SessionActor extends UntypedActor {
         Iterable<ActorRef> children = getContext().getChildren();
         children.forEach((c) -> {
             tellCommands.add(
-                    toMono(Patterns.ask(c, tellCommand, 3L)).map((o) -> {return (PersonDetails)o;})
+                    toMono(Patterns.ask(c, tellCommand, 3L)).map((o) -> {
+                        return (PersonDetails) o;
+                    })
             );
         });
 
         if (!tellCommands.isEmpty()) {
             Mono.zip(tellCommands, (Function<Object[], Object>) Arrays::asList)
-                .doOnSuccess((detailList) -> {
-                    getSender().tell(detailList, getSelf());
-                }).block();
+                    .doOnSuccess((detailList) -> {
+                        getSender().tell(detailList, getSelf());
+                    }).block();
         } else {
             getSender().tell(Collections.EMPTY_LIST, getSelf());
         }
@@ -72,7 +74,7 @@ public class SessionActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Throwable {
         if (message instanceof AddPerson) {
-            onReceive((AddPerson)message);
+            onReceive((AddPerson) message);
         } else if (message instanceof TellPersonList) {
             onReceive((TellPersonList) message);
         } else {
@@ -94,5 +96,6 @@ public class SessionActor extends UntypedActor {
         }
     }
 
-    public static class TellPersonList {}
+    public static class TellPersonList {
+    }
 }

@@ -7,59 +7,82 @@
         <link rel="stylesheet" type="text/css" href="/assets/css/uswds.css">
     </head>
     <body>
-    <header class="usa-header usa-header--basic" role="banner">
-        <div class="usa-nav-container">
-            <div class="usa-navbar">
-                <div class="usa-logo" id="basic-logo">
-                    <em class="usa-logo__text"><a href="/" title="Home" aria-label="Home">Vamos</a></em>
+        <header class="usa-header usa-header--basic" role="banner">
+            <div class="usa-nav-container">
+                <div class="usa-navbar">
+                    <div class="usa-logo" id="basic-logo">
+                        <em class="usa-logo__text">
+                            <a href="/" title="Home" aria-label="Home">Vamos</a>
+                        </em>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="usa-header usa-header--basic" role="banner">
+            <legend class="usa-legend">Hi,
+                <span th:text="${fname}"/>
+                <span th:text="${lname}"/>
+            </legend>
+
+            <ul>
+                <li>Your last checkin was on
+                    <span th:text="${time}"/>
+                </li>
+            </ul>
+            <div class="usa-accordion">
+                <h2 class="usa-accordion__heading">
+                    <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
+                        Arrivals
+                    </button>
+                </h2>
+                <div id="a1" class="usa-accordion__content usa-prose">
+                    <span class="usa-sidenav">
+                        <div class="usa-sidenav__item">
+                            <a href="/arrivals/signin">Sign in</a>
+                        </div>
+                        <div class="usa-sidenav__item">
+                            <a href="/arrivals/register">Register</a>
+                        </div>
+                        <div class="usa-sidenav__item">
+                            <a href="/arrivals/list">List</a>
+                        </div>
+                    </span>
+                </div>
+
+                <h2 class="usa-accordion__heading">
+                    <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
+                        Administration
+                    </button>
+                </h2>
+                <div id="a2" class="usa-accordion__content usa-prose">
+                    <span class="usa-sidenav">
+                        <div class="usa-sidenav__item">
+                            <a>Supply</a>
+                        </div>
+                        <div class="usa-sidenav__item">
+                            <a>Schedule</a>
+                        </div>
+                        <div class="usa-sidenav__item">
+                            <a>Cloud Settings</a>
+                        </div>
+                    </span>
+                </div>
+                <h2 class="usa-accordion__heading">
+                    <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
+                        Manage Your Team
+                    </button>
+                </h2>
+                <div id="a3" class="usa-accordion__content usa-prose">
+                    <span class="usa-sidenav">
+                        <div class="usa-sidenav__item">
+                            <a>Add a member</a>
+                        </div>
+                        <div class="usa-sidenav__item">
+                            <a>Members</a>
+                        </div>
+                    </span>
                 </div>
             </div>
         </div>
-    </header>
-    <div class="usa-header usa-header--basic" role="banner">
-        <legend class="usa-legend">Hi, <span th:text="${fname}" /> <span th:text="${lname}" /></legend>
-
-        <ul>
-            <li>Your last checkin was on <span th:text="${time}" /></li>
-        </ul>
-        <div class="usa-accordion">
-            <h2 class="usa-accordion__heading">
-                <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
-                    Arrivals
-                </button>
-            </h2>
-            <div id="a1" class="usa-accordion__content usa-prose">
-                <span class="usa-sidenav">
-                    <div class="usa-sidenav__item"><a href="/arrivals/signin">Sign in</a></div>
-                    <div class="usa-sidenav__item"><a href="/arrivals/register">Register</a></div>
-                    <div class="usa-sidenav__item"><a href="/arrivals/list">List</a></div>
-                </span>
-            </div>
-
-            <h2 class="usa-accordion__heading">
-                <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
-                    Administration
-                </button>
-            </h2>
-            <div id="a2" class="usa-accordion__content usa-prose">
-                <span class="usa-sidenav">
-                        <div class="usa-sidenav__item"><a>Supply</a></div>
-                        <div class="usa-sidenav__item"><a>Schedule</a></div>
-                        <div class="usa-sidenav__item"><a>Cloud Settings</a></div>
-                </span>
-            </div>
-            <h2 class="usa-accordion__heading">
-                <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1">
-                    Manage Your Team
-                </button>
-            </h2>
-            <div id="a3" class="usa-accordion__content usa-prose">
-                <span  class="usa-sidenav">
-                    <div class="usa-sidenav__item"><a>Add a member</a></div>
-                    <div class="usa-sidenav__item"><a>Members</a></div>
-                </span>
-            </div>
-        </div>
-    </div>
     </body>
 </html>

@@ -5,17 +5,17 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
-import com.sun.tools.javac.util.List;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import scala.concurrent.Future;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.Function;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
 import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
@@ -60,7 +60,7 @@ public class SessionActor extends UntypedActor {
         });
 
         if (!tellCommands.isEmpty()) {
-            Mono.zip(tellCommands, List::from)
+            Mono.zip(tellCommands, (Function<Object[], Object>) Arrays::asList)
                 .doOnSuccess((detailList) -> {
                     getSender().tell(detailList, getSelf());
                 }).block();

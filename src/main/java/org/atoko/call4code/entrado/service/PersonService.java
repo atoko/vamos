@@ -12,6 +12,7 @@ import org.atoko.call4code.entrado.model.PersonDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
@@ -45,19 +46,28 @@ public class PersonService {
     }
 
 
-    public Mono<PersonDetails> get(String id) {
-        return toMono(sessionService.child(PERSON_PREFIX + id).resolveOne(duration))
-            .flatMap((ref) -> {
-                return toMono(Patterns.ask(ref, new PersonActor.TellDetails(), 5000));
-            }).map((response) -> {
-            if (response instanceof PersonDetails) {
-                return (PersonDetails)response;
-            }
-            return new PersonDetails("none", "none", "none");
-        });
+    public Mono<List<PersonDetails>> get(String id) {
+        if (!StringUtils.isEmpty(id)) {
+            return getById(id).map(Collections::singletonList);
+        } else {
+            return getAll();
+        }
+
     }
 
-    public Mono<List<PersonDetails>> getAll() {
+    private Mono<PersonDetails> getById(String id) {
+        return toMono(sessionService.child(PERSON_PREFIX + id).resolveOne(duration))
+            .flatMap((ref) -> toMono(Patterns.ask(ref, new PersonActor.TellDetails(), 5000))).map((response) -> {
+                if (response instanceof PersonDetails) {
+                    return  ((PersonDetails)response);
+                }
+
+                //throw not found
+                return new PersonDetails("none", "none", "none");
+            });
+    }
+
+    private Mono<List<PersonDetails>> getAll() {
         return toMono(Patterns.ask(sessionService.get(), tellPersonListCommand, 5000))
             .map((response) -> {
                 if (response instanceof List) {

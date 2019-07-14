@@ -1,6 +1,7 @@
 package org.atoko.call4code.entrado.controller;
 
 import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.request.PersonCreateRequest;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +17,12 @@ public class PersonController {
 
     @PostMapping("/person")
     public Mono<ResponseEntity<PersonDetails>> postPerson(
-            @RequestBody Object name
+            @RequestBody PersonCreateRequest request
     ) {
-        return personService.create("a", "b", "c").map((person) -> ResponseEntity.ok(person));
+        return personService.create(
+                request.getFirstName(),
+                request.getLastName(),
+                request.getPin()
+        ).map((person) -> ResponseEntity.ok(person));
     }
-
-    @GetMapping("/person")
-    public Mono<ResponseEntity<PersonDetails>> getPerson(
-            @RequestParam String id
-    ) {
-        return personService.get(id).map((person -> {
-            return ResponseEntity.ok(person);
-        }));
-    }
-
 }

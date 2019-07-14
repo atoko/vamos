@@ -1,6 +1,8 @@
 package org.atoko.call4code.entrado.controller.views;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.var;
+import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -39,7 +41,8 @@ public class ArrivalsViewController {
         return webExchange.getFormData().flatMap((fd) -> {
             String pin = fd.getFirst("checkin-pin");
             return personService.get(pin)
-                    .map((person) -> {
+                    .map((personDetailsList) -> {
+                        PersonDetails person = personDetailsList.get(0);
                         model.addAttribute("fname", person.fname);
                         model.addAttribute("lname", person.lname);
                         model.addAttribute("time", new Date());
@@ -64,12 +67,12 @@ public class ArrivalsViewController {
         return webExchange.getFormData().flatMap((fd) -> {
             String fname = fd.getFirst("first-name");
             String lname = fd.getFirst("last-name");
-            String pin = "0000";//fd.getFirst("checkin-pin");
+            String pin = fd.getFirst("checkin-pin");
             return personService.create(fname, lname, pin)
                     .map((person) -> {
                         model.addAttribute("fname", fname);
                         model.addAttribute("lname", lname);
-                        model.addAttribute("pin", person.id);
+                        model.addAttribute("pin", pin);
                         return "arrivals/register/post";
                     });
         });
@@ -82,7 +85,7 @@ public class ArrivalsViewController {
             Model model
     )
     {
-        return personService.getAll().map((people) -> {
+        return personService.get(null).map((people) -> {
             try {
                 model.addAttribute("people", objectMapper.writeValueAsString(people));
             } catch (Exception e) {}

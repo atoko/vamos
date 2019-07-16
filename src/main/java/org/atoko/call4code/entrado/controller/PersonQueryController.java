@@ -3,6 +3,7 @@ package org.atoko.call4code.entrado.controller;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +12,7 @@ import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.Map;
 
 @RestController()
 @RequestMapping("/api")
@@ -20,7 +22,7 @@ public class PersonQueryController {
     private PersonService personService;
 
     @GetMapping("/person")
-    public Mono<ResponseEntity<Object>> getPerson(
+    public Mono<ResponseEntity<Map<String, Object>>> getPerson(
             @RequestParam(value = "filter.personId", required = false) String id
     ) {
         return personService.get(id).map((personList -> {

@@ -24,10 +24,15 @@ public class ExceptionController {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> defaultExceptionHandler(Exception ex) {
+        Throwable cause = ex.getCause();
+        String name = ex.getClass().getName();
+        if (cause != null) {
+            name = cause.getClass().getName();
+        }
         return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT)
                 .body(new ErrorResponse(
                         new ErrorNode(
-                                ex.getCause().getClass().getName(),
+                                name,
                                 ex.getMessage()
                         )
                 ));

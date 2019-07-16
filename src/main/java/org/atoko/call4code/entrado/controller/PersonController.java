@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+import java.util.Map;
+
 @RestController()
 @RequestMapping("/api")
 public class PersonController {
@@ -19,13 +22,13 @@ public class PersonController {
     private PersonService personService;
 
     @PostMapping("/person")
-    public Mono<ResponseEntity<PersonDetails>> postPerson(
+    public Mono<ResponseEntity<Map<String, PersonDetails>>> postPerson(
             @RequestBody PersonCreateRequest request
     ) {
         return personService.create(
                 request.getFirstName(),
                 request.getLastName(),
                 request.getPin()
-        ).map((person) -> ResponseEntity.ok(person));
+        ).map((person) -> ResponseEntity.ok(Collections.singletonMap("data", person)));
     }
 }

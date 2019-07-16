@@ -1,12 +1,13 @@
 package org.atoko.call4code.entrado.model.request;
 
 import lombok.Data;
+import org.springframework.util.MultiValueMap;
 
 @Data
 public class PersonCreateRequest {
 
 
-    private final ThreadLocal<String> lastName = new ThreadLocal<String>();
+    private String lastName;
     private String firstName;
     private String pin;
 
@@ -16,8 +17,14 @@ public class PersonCreateRequest {
     public PersonCreateRequest(String firstName, String lastName, String pin) {
 
         this.firstName = firstName;
-        this.lastName.set(lastName);
+        this.lastName =lastName;
         this.pin = pin;
+    }
+
+    public PersonCreateRequest(MultiValueMap<String, String> formData) {
+        firstName = formData.getFirst("first-name");
+        lastName = formData.getFirst("last-name");
+        pin = formData.getFirst("checkin-pin");
     }
 
     public String getFirstName() {
@@ -25,7 +32,7 @@ public class PersonCreateRequest {
     }
 
     public String getLastName() {
-        return lastName.get();
+        return lastName;
     }
 
     public String getPin() {

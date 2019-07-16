@@ -1,17 +1,25 @@
 package org.atoko.call4code.entrado.controller.views;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.atoko.call4code.entrado.controller.AuthenticationController;
+import org.atoko.call4code.entrado.controller.PersonController;
 import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.request.PersonCreateRequest;
+import org.atoko.call4code.entrado.security.model.User;
 import org.atoko.call4code.entrado.service.PersonService;
+import org.atoko.call4code.entrado.utils.JwtTools;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.Date;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/arrivals")
@@ -19,12 +27,18 @@ public class ArrivalsViewController {
 
     static private ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
-    private PersonService personService;
+    private PersonController personController;
+
     @Autowired
-    private PersonService sessionService;
+    private AuthenticationController authenticationController;
+
+    @Autowired
+    private JwtTools jwtTools;
 
     @RequestMapping(value = {"/", "/signin"})
-    public String index() {
+    public String index(
+            @RequestParam(required = false) String error
+    ) {
         return "signin/index";
     }
 
@@ -35,15 +49,31 @@ public class ArrivalsViewController {
     ) {
 
         return webExchange.getFormData().flatMap((fd) -> {
+            String id = fd.getFirst("unique-id");
             String pin = fd.getFirst("checkin-pin");
-            return personService.get(pin)
-                    .map((personDetailsList) -> {
-                        PersonDetails person = personDetailsList.get(0);
-                        model.addAttribute("fname", person.fname);
-                        model.addAttribute("lname", person.lname);
-                        model.addAttribute("time", new Date());
-                        return "signin/index";
-                    }).onErrorReturn("signin");
+
+            return authenticationController.authenticatePerson(
+                    id,
+                    pin
+            ).map((authResponse) -> {
+                    PersonDetails person = ((Map<String, PersonDetails>)authResponse.getBody()).get("data");
+                    model.addAttribute("firstName", person.firstName);
+                    model.addAttribute("lastName", person.lastName);
+                    model.addAttribute("time", new Date());
+                    webExchange.getResponse().addCookie(
+                            ResponseCookie.from("awt",
+                                    jwtTools.generateToken(
+                                            User.person(
+                                                    person.getUniqueId(),
+                                                    ""
+                                            )
+                                    ))
+                            .path("/")
+                            .build()
+                    );
+
+                    return "redirect:/?query=";
+            }).onErrorReturn("redirect:/arrivals/signin?error=NOT_FOUND");
         });
 
     }
@@ -60,31 +90,33 @@ public class ArrivalsViewController {
     ) {
 
         return webExchange.getFormData().flatMap((fd) -> {
-            String fname = fd.getFirst("first-name");
-            String lname = fd.getFirst("last-name");
-            String pin = fd.getFirst("checkin-pin");
-            return personService.create(fname, lname, pin)
-                    .map((person) -> {
-                        model.addAttribute("fname", fname);
-                        model.addAttribute("lname", lname);
-                        model.addAttribute("pin", pin);
+            PersonCreateRequest request = new PersonCreateRequest(fd);
+            return personController.postPerson(request)
+                    .map((response) -> {
+                        PersonDetails person = response.getBody().get("data");
+                        model.addAttribute("firstName", person.firstName);
+                        model.addAttribute("lastName", person.lastName);
+
+                        model.addAttribute("username", person.getId());
+                        model.addAttribute("pin", request.getPin());
+
                         return "arrivals/register/post";
                     });
         });
 
     }
-
-    @RequestMapping(value = {"/list"})
-    public Mono<String> list(
-            Model model
-    ) {
-        return personService.get(null).map((people) -> {
-            try {
-                model.addAttribute("people", objectMapper.writeValueAsString(people));
-            } catch (Exception e) {
-            }
-
-            return "arrivals/list/index";
-        });
-    }
+//
+//    @RequestMapping(value = {"/list"})
+//    public Mono<String> list(
+//            Model model
+//    ) {
+//        return personService.get(null).map((people) -> {
+//            try {
+//                model.addAttribute("people", objectMapper.writeValueAsString(people));
+//            } catch (Exception e) {
+//            }
+//
+//            return "arrivals/list/index";
+//        });
+//    }
 }

@@ -3,7 +3,7 @@ package org.atoko.call4code.entrado.actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
+import akka.actor.UntypedAbstractActor;
 import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
@@ -22,17 +22,19 @@ import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class SessionActor extends UntypedActor {
+public class DeviceActor extends UntypedAbstractActor {
     private final PersonService personService;
 
-    public SessionActor(PersonService personService) {
+    public DeviceActor(
+            PersonService personService
+    ) {
         this.personService = personService;
     }
 
     public static Props props(PersonService personService) {
         // You need to specify the actual type of the returned actor
         // since Java 8 lambdas have some runtime type information erased
-        return Props.create(SessionActor.class, () -> new SessionActor(personService));
+        return Props.create(DeviceActor.class, () -> new DeviceActor(personService));
     }
 
     // constructor
@@ -51,7 +53,7 @@ public class SessionActor extends UntypedActor {
 
     private void onReceive(TellPersonList tellListCommand) {
         ArrayList<Mono<PersonDetails>> tellCommands = new ArrayList<>();
-        PersonActor.TellDetails tellCommand = new PersonActor.TellDetails();
+        PersonActor.TellDetails tellCommand = new PersonActor.TellDetails(tellListCommand.getDeviceId());
         Iterable<ActorRef> children = getContext().getChildren();
         children.forEach((c) -> {
             tellCommands.add(
@@ -70,6 +72,7 @@ public class SessionActor extends UntypedActor {
             getSender().tell(Collections.EMPTY_LIST, getSelf());
         }
     }
+
 
     @Override
     public void onReceive(Object message) throws Throwable {
@@ -97,5 +100,14 @@ public class SessionActor extends UntypedActor {
     }
 
     public static class TellPersonList {
+        String deviceId;
+
+        public TellPersonList(String deviceId) {
+            this.deviceId = deviceId;
+        }
+
+        public String getDeviceId() {
+            return deviceId;
+        }
     }
 }

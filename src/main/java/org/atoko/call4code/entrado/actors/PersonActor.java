@@ -1,7 +1,7 @@
 package org.atoko.call4code.entrado.actors;
 
 import akka.actor.Props;
-import akka.actor.UntypedActor;
+import akka.actor.UntypedAbstractActor;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -9,17 +9,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class PersonActor extends UntypedActor {
-    public static String PERSON_PREFIX = "person-";
-    private final String id;
-    private final String fname;
-    private final String lname;
-    private final String pin;
+public class PersonActor extends UntypedAbstractActor {
+    public static String PERSON_PREFIX = "person;";
+    public final String id;
+    public final String firstName;
+    public final String lastName;
+    public final String pin;
 
-    public PersonActor(String fname, String lname, String pin, String id) {
+    public PersonActor(String firstName, String lastName, String pin, String id) {
         this.id = id;
-        this.fname = fname;
-        this.lname = lname;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.pin = pin;
     }
 
@@ -34,7 +34,11 @@ public class PersonActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Throwable {
         if (message instanceof TellDetails) {
-            getSender().tell(new PersonDetails(fname, lname, id), getSelf());
+            PersonDetails response = new PersonDetails(
+                    this,
+                    ((TellDetails)message).getDeviceId()
+            );
+            getSender().tell(response, getSelf());
         } else if (message instanceof JoinQueue) {
             //not implemented
         } else {
@@ -43,6 +47,15 @@ public class PersonActor extends UntypedActor {
     }
 
     public static class TellDetails {
+        String deviceId;
+
+        public TellDetails(String deviceId) {
+            this.deviceId = deviceId;
+        }
+
+        public String getDeviceId() {
+            return deviceId;
+        }
     }
 
     public static class JoinQueue {

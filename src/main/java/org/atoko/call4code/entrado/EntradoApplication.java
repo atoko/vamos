@@ -19,7 +19,7 @@ public class EntradoApplication {
 
     @Bean
     public ActorSystem actorSystem() {
-        ActorSystem system = ActorSystem.create("akka-spring-demo");
+        ActorSystem system = ActorSystem.create("root-system");
         SpringExtension.SPRING_EXTENSION_PROVIDER.get(system).initialize(applicationContext);
         return system;
     }

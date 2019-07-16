@@ -1,0 +1,7 @@
+entrado:
+    jwt:
+        secret: ChkJXWvcspEVoiIQa5OaDZxXaHdM9YbW
+        expiration: 3000
+spring:
+    webflux:
+        static-path-pattern: /assets/**

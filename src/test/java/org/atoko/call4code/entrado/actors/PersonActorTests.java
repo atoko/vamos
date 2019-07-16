@@ -29,8 +29,8 @@ public class PersonActorTests extends ActorTest {
         Future<Object> future = Patterns.ask(greeter, new PersonActor.TellDetails(), 3L);
         PersonDetails result = (PersonDetails)Await.result(future, Duration.create(3, TimeUnit.SECONDS));
 
-        Assertions.assertEquals(fname, result.fname);
-        Assertions.assertEquals(lname, result.lname);
+        Assertions.assertEquals(fname, result.firstName);
+        Assertions.assertEquals(lname, result.lastName);
         Assertions.assertEquals(id, result.id);
     }
 }

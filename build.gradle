@@ -24,7 +24,7 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'org.atoko.call4code'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+sourceCompatibility = '1.9'
 
 configurations {
 	developmentOnly
@@ -43,18 +43,27 @@ repositories {
 }
 
 dependencies {
-//	implementation 'org.springframework.boot:spring-boot-starter-security'
-//	testImplementation 'org.springframework.security:spring-security-test'
+	implementation  'io.jsonwebtoken:jjwt-api:0.10.5'
+	runtime 'io.jsonwebtoken:jjwt-impl:0.10.5',
+			'io.jsonwebtoken:jjwt-jackson:0.10.5'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
 
 
-	implementation 'org.springframework.boot:spring-boot-starter-artemis'
+//	implementation 'org.springframework.boot:spring-boot-starter-artemis'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework:spring-context'
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
 	implementation 'org.scala-lang.modules:scala-java8-compat_2.11:0.9.0'
-	implementation 'com.typesafe.akka:akka-actor_2.11:2.4.8'
+	implementation 'com.typesafe.akka:akka-actor_2.11:2.5.23'
+	implementation 'com.typesafe.akka:akka-persistence_2.11:2.5.23'
 	implementation 'org.scala-lang:scala-library:2.11.8'
+
+	implementation 'com.github.oshi:oshi-core:3.13.3'
+	implementation 'net.java.dev.jna:jna:5.2.0'
+	implementation 'net.java.dev.jna:jna-platform:5.2.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

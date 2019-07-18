@@ -1,38 +1,24 @@
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+    <head th:replace="views/includes.html :: head"/>
+    <body>
+        <header th:replace="views/clamp.html :: header"/>
+        <div class="usa-header usa-header--basic" role="banner">
+            <form class="usa-form" action="/arrivals/signin" method="post">
+                <fieldset class="usa-fieldset">
+                    <legend class="usa-legend">Sign In</legend>
 
-    <link rel="stylesheet" type="text/css" href="/assets/css/uswds.css">
-</head>
-<body>
-<header class="usa-header usa-header--basic" role="banner">
-    <div class="usa-nav-container">
-        <div class="usa-navbar">
-            <div class="usa-logo" id="basic-logo">
-                <em class="usa-logo__text"><a href="/" title="Home" aria-label="Home">Vamos</a></em>
-            </div>
+                    <label class="usa-label" for="unique-personId">Unique Id</label>
+                    <input class="usa-input" id="unique-personId" name="unique-personId" required aria-required="true">
+                    <label class="usa-label" for="checkin-pin">Check In PIN</label>
+                    <input class="usa-input" id="checkin-pin" maxlength="4" name="checkin-pin" required aria-required="true">
+                    <p class="usa-form__note">
+                        <span title="Register-note" aria-controls="checkin-pin"><ul><li>Do you need a unique personId? <a
+                                href="/arrivals/register">Register</a></li></ul></span>
+                    </p>
+
+                    <input class="usa-button" type="submit" value="Sign In">
+                </fieldset>
+            </form>
         </div>
-    </div>
-</header>
-<div class="usa-header usa-header--basic" role="banner">
-    <form class="usa-form" action="/arrivals/signin/post" method="post">
-        <fieldset class="usa-fieldset">
-            <legend class="usa-legend">Sign In</legend>
-
-            <label class="usa-label" for="unique-id">Unique Id</label>
-            <input class="usa-input" id="unique-id" name="unique-id" required aria-required="true">
-            <label class="usa-label" for="checkin-pin">Check In PIN</label>
-            <input class="usa-input" id="checkin-pin" maxlength="4" name="checkin-pin" required aria-required="true">
-            <p class="usa-form__note">
-                <span title="Register-note" aria-controls="checkin-pin"><ul><li>Do you need a unique id? <a
-                        href="/arrivals/register">Register</a></li></ul></span>
-            </p>
-
-            <input class="usa-button" type="submit" value="Sign In">
-        </fieldset>
-    </form>
-</div>
-</body>
+    </body>
 </html>

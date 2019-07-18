@@ -11,53 +11,40 @@ import org.springframework.stereotype.Component;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PersonActor extends UntypedAbstractActor {
     public static String PERSON_PREFIX = "person;";
-    public final String id;
+    public final String deviceId;
+    public final String personId;
     public final String firstName;
     public final String lastName;
     public final String pin;
 
-    public PersonActor(String firstName, String lastName, String pin, String id) {
-        this.id = id;
+    public PersonActor(String deviceId, String personId, String firstName, String lastName, String pin) {
+        this.deviceId = deviceId;
+        this.personId = personId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.pin = pin;
     }
 
-    public static Props props(String fname, String lname, String pin, String id) {
+    public static Props props(String deviceId, String personId, String firstName, String lastName, String pin) {
         // You need to specify the actual type of the returned actor
         // since Java 8 lambdas have some runtime type information erased
-        return Props.create(PersonActor.class, () -> new PersonActor(fname, lname, pin, id));
+        return Props.create(PersonActor.class, () -> new PersonActor(personId, deviceId, firstName, lastName, pin));
     }
 
     // constructor
 
     @Override
     public void onReceive(Object message) throws Throwable {
-        if (message instanceof TellDetails) {
+        if (message instanceof PersonDetailsPoll) {
             PersonDetails response = new PersonDetails(
-                    this,
-                    ((TellDetails)message).getDeviceId()
+                    this
             );
             getSender().tell(response, getSelf());
-        } else if (message instanceof JoinQueue) {
-            //not implemented
         } else {
             unhandled(message);
         }
     }
 
-    public static class TellDetails {
-        String deviceId;
-
-        public TellDetails(String deviceId) {
-            this.deviceId = deviceId;
-        }
-
-        public String getDeviceId() {
-            return deviceId;
-        }
-    }
-
-    public static class JoinQueue {
+    public static class PersonDetailsPoll {
     }
 }

@@ -1,23 +1,7 @@
 <html xmlns:th="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <link rel="stylesheet" type="text/css" href="/assets/css/uswds.css">
-    </head>
+    <head th:replace="views/includes.html :: head"/>
     <body>
-        <header class="usa-header usa-header--basic" role="banner">
-            <div class="usa-nav-container">
-                <div class="usa-navbar">
-                    <div class="usa-logo" id="basic-logo">
-                        <em class="usa-logo__text">
-                            <a href="/" title="Home" aria-label="Home">Vamos</a>
-                        </em>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <header th:replace="views/clamp.html :: header"/>
         <div class="usa-header usa-header--basic" role="banner">
             <legend class="usa-legend">Hi,
                 <span th:text="${firstName}"/>
@@ -35,7 +19,7 @@
                         Arrivals
                     </button>
                 </h2>
-                <div id="a1" class="usa-accordion__content usa-prose">
+                <div personId="a1" class="usa-accordion__content usa-prose">
                     <span class="usa-sidenav">
                         <div class="usa-sidenav__item">
                             <a href="/arrivals/signin">Sign in</a>
@@ -54,7 +38,7 @@
                         Administration
                     </button>
                 </h2>
-                <div id="a2" class="usa-accordion__content usa-prose">
+                <div personId="a2" class="usa-accordion__content usa-prose">
                     <span class="usa-sidenav">
                         <div class="usa-sidenav__item">
                             <a>Supply</a>
@@ -72,7 +56,7 @@
                         Manage Your Team
                     </button>
                 </h2>
-                <div id="a3" class="usa-accordion__content usa-prose">
+                <div personId="a3" class="usa-accordion__content usa-prose">
                     <span class="usa-sidenav">
                         <div class="usa-sidenav__item">
                             <a>Add a member</a>

@@ -55,6 +55,9 @@ public class JwtTools {
         Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
+    public boolean isTokenValid(String token) {
+        return !isTokenExpired(token) && parser().isSigned(token);
+    }
     public String generateToken(User user) {
         Date created = new Date();
         Date expiration = new Date(created.getTime() + getExpiration() * 1000);

@@ -2,11 +2,10 @@ package org.atoko.call4code.entrado.controller.views;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atoko.call4code.entrado.controller.AuthenticationController;
-import org.atoko.call4code.entrado.controller.PersonController;
+import org.atoko.call4code.entrado.controller.api.person.PersonController;
 import org.atoko.call4code.entrado.model.PersonDetails;
 import org.atoko.call4code.entrado.model.request.PersonCreateRequest;
 import org.atoko.call4code.entrado.security.model.User;
-import org.atoko.call4code.entrado.service.PersonService;
 import org.atoko.call4code.entrado.utils.JwtTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
@@ -35,21 +34,21 @@ public class ArrivalsViewController {
     @Autowired
     private JwtTools jwtTools;
 
-    @RequestMapping(value = {"/", "/signin"})
+    @RequestMapping(value = {"/"})
     public String index(
             @RequestParam(required = false) String error
     ) {
         return "signin/index";
     }
 
-    @PostMapping("/signin/post")
+    @PostMapping("/signin")
     public Mono<String> postSignin(
             ServerWebExchange webExchange,
             Model model
     ) {
 
         return webExchange.getFormData().flatMap((fd) -> {
-            String id = fd.getFirst("unique-id");
+            String id = fd.getFirst("unique-personId");
             String pin = fd.getFirst("checkin-pin");
 
             return authenticationController.authenticatePerson(
@@ -64,7 +63,7 @@ public class ArrivalsViewController {
                             ResponseCookie.from("awt",
                                     jwtTools.generateToken(
                                             User.person(
-                                                    person.getUniqueId(),
+                                                    person.getId(),
                                                     ""
                                             )
                                     ))
@@ -73,7 +72,7 @@ public class ArrivalsViewController {
                     );
 
                     return "redirect:/?query=";
-            }).onErrorReturn("redirect:/arrivals/signin?error=NOT_FOUND");
+            }).onErrorReturn("redirect:/arrivals/?error=NOT_FOUND");
         });
 
     }

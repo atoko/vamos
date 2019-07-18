@@ -26,7 +26,7 @@ public class PersonActorTests extends ActorTest {
                         PersonActor.props(fname, lname, pin, id),
                         "greeter"
                 );
-        Future<Object> future = Patterns.ask(greeter, new PersonActor.TellDetails(), 3L);
+        Future<Object> future = Patterns.ask(greeter, new PersonActor.PersonDetailsPoll(), 3L);
         PersonDetails result = (PersonDetails)Await.result(future, Duration.create(3, TimeUnit.SECONDS));
 
         Assertions.assertEquals(fname, result.firstName);

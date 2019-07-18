@@ -32,7 +32,7 @@ public class AkkaSystemTests {
                         PersonActor.props(name, name, id, id),
                         "greeter"
                 );
-        Future<Object> result = Patterns.ask(greeter, new PersonActor.TellDetails(), 3L);
+        Future<Object> result = Patterns.ask(greeter, new PersonActor.PersonDetailsPoll(), 3L);
 
         Assertions.assertEquals(new PersonDetails(name, name, id).id, ((PersonDetails)Await.result(result, Duration.create(3, TimeUnit.SECONDS))).id);
     }

@@ -1,12 +1,12 @@
-package org.atoko.call4code.entrado.actors;
+package org.atoko.call4code.entrado.actors.meta;
 
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedAbstractActor;
 import akka.pattern.Patterns;
+import org.atoko.call4code.entrado.actors.PersonActor;
 import org.atoko.call4code.entrado.model.PersonDetails;
-import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
@@ -22,38 +23,45 @@ import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class DeviceActor extends UntypedAbstractActor {
-    private final PersonService personService;
+public class DeviceSupervisor extends UntypedAbstractActor {
+    private ActorRef activityManager;
 
-    public DeviceActor(
-            PersonService personService
-    ) {
-        this.personService = personService;
+    public static Props props() {
+        return Props.create(DeviceSupervisor.class, DeviceSupervisor::new);
     }
 
-    public static Props props(PersonService personService) {
-        // You need to specify the actual type of the returned actor
-        // since Java 8 lambdas have some runtime type information erased
-        return Props.create(DeviceActor.class, () -> new DeviceActor(personService));
+    @Override
+    public void preStart() {
+        activityManager = getContext().actorOf(
+                ActivityManager.props(),
+                "ActivityManager"
+        );
     }
 
-    // constructor
+    @Override
+    public void postRestart(Throwable reason) {}
 
-    private void onReceive(AddPerson addPerson) {
+    @Override
+    public void preRestart(Throwable reason, Optional<Object> message) throws Exception {
+        postStop();
+    }
+
+    private void onReceive(PersonAddMessage personAddMessage) {
         getContext().actorOf(
                 PersonActor.props(
-                        addPerson.fname,
-                        addPerson.lname,
-                        addPerson.pin,
-                        addPerson.id
+                    personAddMessage.deviceId,
+                    personAddMessage.personId,
+                    personAddMessage.fname,
+                    personAddMessage.lname,
+                    personAddMessage.pin
                 ),
-                PERSON_PREFIX + addPerson.id);
+                PERSON_PREFIX + personAddMessage.personId);
         getSender().tell(true, getSelf());
     }
 
-    private void onReceive(TellPersonList tellListCommand) {
+    private void onReceive(PollPersonQuery tellListCommand) {
         ArrayList<Mono<PersonDetails>> tellCommands = new ArrayList<>();
-        PersonActor.TellDetails tellCommand = new PersonActor.TellDetails(tellListCommand.getDeviceId());
+        PersonActor.PersonDetailsPoll tellCommand = new PersonActor.PersonDetailsPoll();
         Iterable<ActorRef> children = getContext().getChildren();
         children.forEach((c) -> {
             tellCommands.add(
@@ -76,33 +84,35 @@ public class DeviceActor extends UntypedAbstractActor {
 
     @Override
     public void onReceive(Object message) throws Throwable {
-        if (message instanceof AddPerson) {
-            onReceive((AddPerson) message);
-        } else if (message instanceof TellPersonList) {
-            onReceive((TellPersonList) message);
+        if (message instanceof PersonAddMessage) {
+            onReceive((PersonAddMessage) message);
+        } else if (message instanceof PollPersonQuery) {
+            onReceive((PollPersonQuery) message);
         } else {
             unhandled(message);
         }
     }
 
-    public static class AddPerson {
-        public String id;
-        public String pin;
+    public static class PersonAddMessage {
+        public String deviceId;
+        public String personId;
         public String fname;
         public String lname;
+        public String pin;
 
-        public AddPerson(String fname, String lname, String pin, String id) {
+        public PersonAddMessage(String deviceId, String personId, String fname, String lname, String pin) {
+            this.deviceId = deviceId;
+            this.personId = personId;
             this.fname = fname;
             this.lname = lname;
             this.pin = pin;
-            this.id = id;
         }
     }
 
-    public static class TellPersonList {
+    public static class PollPersonQuery {
         String deviceId;
 
-        public TellPersonList(String deviceId) {
+        public PollPersonQuery(String deviceId) {
             this.deviceId = deviceId;
         }
 

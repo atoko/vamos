@@ -1,9 +1,9 @@
-package org.atoko.call4code.entrado.service;
+package org.atoko.call4code.entrado.service.meta;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import org.atoko.call4code.entrado.actors.DeviceActor;
+import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import oshi.SystemInfo;
@@ -22,7 +22,7 @@ public class DeviceService {
 
     public DeviceService(@Autowired ActorSystem actorSystem) {
         this.actorSystem = actorSystem;
-        actorRef = actorSystem.actorOf(DeviceActor.props(null), "device;" + serial);
+        actorRef = actorSystem.actorOf(DeviceSupervisor.props(), "device;" + serial);
     }
 
     public String getDeviceId() { return serial; }

@@ -1,15 +1,14 @@
 package org.atoko.call4code.entrado.service;
 
-import akka.actor.Props;
 import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.actors.PersonActor;
-import org.atoko.call4code.entrado.actors.DeviceActor;
+import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.atoko.call4code.entrado.exception.ResponseCodeException;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
+import org.atoko.call4code.entrado.service.meta.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 import scala.concurrent.Future;
@@ -30,21 +29,37 @@ public class PersonService {
     FiniteDuration duration = FiniteDuration.create(1, TimeUnit.SECONDS);
     @Autowired
     private DeviceService deviceService;
-    private Props props = null;
-    private PersonActor.TellDetails tellPersonDetailsCommand;
-    private DeviceActor.TellPersonList tellPersonListCommand;
+
+    private PersonActor.PersonDetailsPoll tellPersonDetailsCommand;
+    private DeviceSupervisor.PollPersonQuery pollPersonQueryCommand;
 
     @PostConstruct
     private void buildCommands() {
-        tellPersonDetailsCommand = new PersonActor.TellDetails(deviceService.getDeviceId());
-        tellPersonListCommand = new DeviceActor.TellPersonList(deviceService.getDeviceId());
+        tellPersonDetailsCommand = new PersonActor.PersonDetailsPoll();
+        pollPersonQueryCommand = new DeviceSupervisor.PollPersonQuery();
     }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
-        String id = UUID.randomUUID().toString().substring(0, 8);
-        Future<Object> create = Patterns.ask(deviceService.get(), new DeviceActor.AddPerson(firstName, lastName, pin, id), 5000);
+        String personId = UUID.randomUUID().toString().substring(0, 8);
+        Future<Object> create = Patterns.ask(
+            deviceService.get(),
+            new DeviceSupervisor.PersonAddMessage(
+                    deviceService.getDeviceId(),
+                    personId,
+                    firstName,
+                    lastName,
+                    pin
+            ),
+            5000
+        );
         return toMono(create).map((na) -> {
-            return new PersonDetails(id, firstName, lastName, deviceService.getDeviceId(), pin);
+            return new PersonDetails(
+                    deviceService.getDeviceId(),
+                    personId,
+                    firstName,
+                    lastName,
+                    pin
+            );
         });
     }
 
@@ -55,11 +70,10 @@ public class PersonService {
         } else {
             return getAll();
         }
-
     }
 
     public Mono<PersonDetails> getById(String id) {
-        return toMono(deviceService.child(PERSON_PREFIX + id).resolveOne(duration))
+        return toMono(deviceService.child(() -> deviceService.path().child(PERSON_PREFIX + id)).resolveOne(duration))
                 .onErrorResume((t) -> {
                     throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND", "Person was not found");
                 })
@@ -74,7 +88,7 @@ public class PersonService {
 
     private Mono<List<PersonDetails>> getAll() {
 
-        return toMono(Patterns.ask(deviceService.get(), tellPersonListCommand, 5000))
+        return toMono(Patterns.ask(deviceService.get(), pollPersonQueryCommand, 5000))
                 .map((response) -> {
                     if (response instanceof List) {
                         return (List<PersonDetails>) response;

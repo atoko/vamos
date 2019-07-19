@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 
 @ConfigurationProperties("entrado.jwt")
 public class JwtTools {
@@ -54,6 +53,9 @@ public class JwtTools {
     public boolean isTokenExpired(String token) {
         Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
+    }
+    public boolean isTokenValid(String token) {
+        return !isTokenExpired(token) && parser().isSigned(token);
     }
     public String generateToken(User user) {
         Date created = new Date();

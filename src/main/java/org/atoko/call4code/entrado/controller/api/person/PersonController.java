@@ -1,6 +1,6 @@
-package org.atoko.call4code.entrado.controller;
+package org.atoko.call4code.entrado.controller.api.person;
 
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.atoko.call4code.entrado.model.request.PersonCreateRequest;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;

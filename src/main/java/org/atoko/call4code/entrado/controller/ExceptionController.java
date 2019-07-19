@@ -1,5 +1,6 @@
 package org.atoko.call4code.entrado.controller;
 
+import org.atoko.call4code.entrado.exception.FrontendException;
 import org.atoko.call4code.entrado.exception.ResponseCodeException;
 import org.atoko.call4code.entrado.model.error.ErrorNode;
 import org.atoko.call4code.entrado.model.response.ErrorResponse;
@@ -20,6 +21,11 @@ public class ExceptionController {
                                 ex.getReason()
                         )
                 ));
+    }
+
+    @ExceptionHandler(value = FrontendException.class)
+    public String defaultExceptionHandler(FrontendException ex) {
+        return "redirect:/" + ex.getRedirect()  + "?";
     }
 
     @ExceptionHandler

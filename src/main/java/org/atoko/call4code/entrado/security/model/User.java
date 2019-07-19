@@ -16,6 +16,18 @@ public class User {
         this.roles = roles;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
     static private List<Role> personRoles = List.of(Role.ROLE_PERSON);
     static public User person(String id, String session) {
         if (session == null) {
@@ -24,4 +36,5 @@ public class User {
 
         return new User(id, session, personRoles);
     }
+
 }

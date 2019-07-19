@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 
 @ConfigurationProperties("entrado.jwt")
 public class JwtTools {

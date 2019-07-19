@@ -4,7 +4,7 @@ import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.actors.PersonActor;
 import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.atoko.call4code.entrado.exception.ResponseCodeException;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.atoko.call4code.entrado.service.meta.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,16 +36,16 @@ public class PersonService {
     @PostConstruct
     private void buildCommands() {
         tellPersonDetailsCommand = new PersonActor.PersonDetailsPoll();
-        pollPersonQueryCommand = new DeviceSupervisor.PollPersonQuery(deviceService.getDeviceId());
+        pollPersonQueryCommand = new DeviceSupervisor.PollPersonQuery();
     }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
-        String id = UUID.randomUUID().toString().substring(0, 8);
+        String personId = UUID.randomUUID().toString().substring(0, 8);
         Future<Object> create = Patterns.ask(
             deviceService.get(),
             new DeviceSupervisor.PersonAddMessage(
                     deviceService.getDeviceId(),
-                    id,
+                    personId,
                     firstName,
                     lastName,
                     pin
@@ -53,7 +53,13 @@ public class PersonService {
             5000
         );
         return toMono(create).map((na) -> {
-            return new PersonDetails(id, firstName, lastName, deviceService.getDeviceId(), pin);
+            return new PersonDetails(
+                    deviceService.getDeviceId(),
+                    personId,
+                    firstName,
+                    lastName,
+                    pin
+            );
         });
     }
 
@@ -64,11 +70,10 @@ public class PersonService {
         } else {
             return getAll();
         }
-
     }
 
     public Mono<PersonDetails> getById(String id) {
-        return toMono(deviceService.child(PERSON_PREFIX + id).resolveOne(duration))
+        return toMono(deviceService.child(() -> deviceService.path().child(PERSON_PREFIX + id)).resolveOne(duration))
                 .onErrorResume((t) -> {
                     throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND", "Person was not found");
                 })

@@ -1,15 +1,11 @@
 package org.atoko.call4code.entrado.controller.api.activity;
 
-import org.atoko.call4code.entrado.model.PersonDetails;
-import org.atoko.call4code.entrado.model.request.PersonCreateRequest;
+import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.service.ActivityService;
-import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
@@ -23,11 +19,24 @@ public class ActivityController {
     private ActivityService activityService;
 
     @PostMapping("/activity")
-    public Mono<ResponseEntity<Map<String, String>>> postPerson(
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> post(
             @RequestBody String name
     ) {
         return activityService.create(
                 name
         ).map((activity) -> ResponseEntity.ok(Collections.singletonMap("data", activity)));
+    }
+
+    @GetMapping("/activity")
+    public Mono<ResponseEntity<Map<String, Object>>> get(
+            @RequestParam(value = "filter.activityId", required = false) String id
+    ) {
+        return activityService.get(id).map((activityList -> {
+            if (!StringUtils.isEmpty(id)) {
+                return ResponseEntity.ok(Collections.singletonMap("data", activityList.get(0)));
+            } else {
+                return ResponseEntity.ok(Collections.singletonMap("data", activityList));
+            }
+        }));
     }
 }

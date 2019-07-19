@@ -1,4 +1,4 @@
-package org.atoko.call4code.entrado.model;
+package org.atoko.call4code.entrado.model.details;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -6,36 +6,37 @@ import org.atoko.call4code.entrado.actors.PersonActor;
 
 @Data
 public class PersonDetails {
-    public String id = "";
+
     public String deviceId = "";
+    public String personId = "";
     public String firstName = "";
     public String lastName = "";
     @JsonIgnore
     public String pin = "";
 
     public PersonDetails(PersonActor actor) {
-        this.id = actor.personId;
         this.deviceId = actor.deviceId;
+        this.personId = actor.personId;
         this.firstName = actor.firstName;
         this.lastName = actor.lastName;
         this.pin = actor.pin;
     }
 
-    public PersonDetails(String id, String deviceId, String firstName, String lastName, String pin) {
-        this.id = id;
+    public PersonDetails(String deviceId, String personId, String firstName, String lastName, String pin) {
         this.deviceId = deviceId;
+        this.personId = personId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.pin = pin;
     }
 
 
-    public String getId() {
-        return id;
-    }
-
     public String getDeviceId() {
         return deviceId;
+    }
+
+    public String getPersonId() {
+        return personId;
     }
 
     public String getFirstName() {
@@ -51,7 +52,7 @@ public class PersonDetails {
     }
 
     public String getUniqueId() {
-        return String.format("%s;%s", deviceId, id);
+        return String.format("%s;%s", deviceId, personId);
     }
 
 }

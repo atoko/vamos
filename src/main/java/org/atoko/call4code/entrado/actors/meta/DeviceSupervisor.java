@@ -6,7 +6,7 @@ import akka.actor.Props;
 import akka.actor.UntypedAbstractActor;
 import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.actors.PersonActor;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -26,6 +26,10 @@ import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 public class DeviceSupervisor extends UntypedAbstractActor {
     private ActorRef activityManager;
 
+    public static class Children {
+        public static final String ACTIVITY_MANAGER = "ActivityManager";
+    }
+
     public static Props props() {
         return Props.create(DeviceSupervisor.class, DeviceSupervisor::new);
     }
@@ -34,7 +38,7 @@ public class DeviceSupervisor extends UntypedAbstractActor {
     public void preStart() {
         activityManager = getContext().actorOf(
                 ActivityManager.props(),
-                "ActivityManager"
+                Children.ACTIVITY_MANAGER
         );
     }
 
@@ -59,9 +63,9 @@ public class DeviceSupervisor extends UntypedAbstractActor {
         getSender().tell(true, getSelf());
     }
 
+    static PersonActor.PersonDetailsPoll tellCommand = new PersonActor.PersonDetailsPoll();
     private void onReceive(PollPersonQuery tellListCommand) {
         ArrayList<Mono<PersonDetails>> tellCommands = new ArrayList<>();
-        PersonActor.PersonDetailsPoll tellCommand = new PersonActor.PersonDetailsPoll();
         Iterable<ActorRef> children = getContext().getChildren();
         children.forEach((c) -> {
             tellCommands.add(
@@ -110,14 +114,8 @@ public class DeviceSupervisor extends UntypedAbstractActor {
     }
 
     public static class PollPersonQuery {
-        String deviceId;
-
-        public PollPersonQuery(String deviceId) {
-            this.deviceId = deviceId;
+        public PollPersonQuery() {
         }
 
-        public String getDeviceId() {
-            return deviceId;
-        }
     }
 }

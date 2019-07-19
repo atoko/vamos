@@ -1,5 +1,6 @@
 package org.atoko.call4code.entrado.service.meta;
 
+import akka.actor.ActorPath;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
@@ -7,6 +8,8 @@ import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import oshi.SystemInfo;
+
+import java.util.function.Supplier;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
 
@@ -31,8 +34,12 @@ public class DeviceService {
         return actorRef;
     }
 
-    public ActorSelection child(String id) {
-        return actorSystem.actorSelection(actorRef.path().child(id));
+    public ActorSelection child(Supplier<ActorPath> path) {
+        return actorSystem.actorSelection(path.get());
+    }
+
+    public ActorPath path() {
+        return actorRef.path();
     }
 
     public ActorSelection allPersons() {

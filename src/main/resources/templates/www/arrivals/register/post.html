@@ -1,0 +1,23 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+    <head th:replace="views/includes.html :: head"/>
+    <body>
+        <header th:replace="views/clamp.html :: header"/>
+        <div class="usa-header usa-header--basic" role="banner">
+            <fieldset class="usa-fieldset">
+                <legend class="usa-legend">
+                    Thank you for registering, <span th:text="${firstName}"/> <span th:text="${lastName}"/>
+                </legend>
+
+
+                <ul>
+                    Remember:
+                    <li>Unique ID: <span th:text="${username}"></span></li>
+                    <li>Check in PIN: <span th:text="${pin}"/></li>
+                    <li>You will need both your Unique Id and PIN to log in</li>
+                    <li>Keep these details in a safe place <button>Take Screenshot</button></li>
+                </ul>
+                <a href="/www/signin"><button>sign in</button></a>
+            </fieldset>
+        </div>
+    </body>
+</html>

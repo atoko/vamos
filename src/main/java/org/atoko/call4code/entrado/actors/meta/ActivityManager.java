@@ -20,7 +20,11 @@ public class ActivityManager extends AbstractActor {
 
     private void onReceive(ActivityCreateMessage message) {
         getContext().actorOf(
-                ActivityActor.props(message.getActivityId(), message.getName()),
+                ActivityActor.props(
+                        message.getDeviceId(),
+                        message.getActivityId(),
+                        message.getName()
+                ),
                 ACTIVITY_PREFIX + message.getActivityId()
         );
         getSender().tell(true, getSelf());

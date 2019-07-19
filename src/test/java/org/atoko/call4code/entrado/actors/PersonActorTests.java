@@ -2,7 +2,7 @@ package org.atoko.call4code.entrado.actors;
 
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import scala.concurrent.Await;
@@ -31,6 +31,6 @@ public class PersonActorTests extends ActorTest {
 
         Assertions.assertEquals(fname, result.firstName);
         Assertions.assertEquals(lname, result.lastName);
-        Assertions.assertEquals(id, result.id);
+        Assertions.assertEquals(id, result.personId);
     }
 }

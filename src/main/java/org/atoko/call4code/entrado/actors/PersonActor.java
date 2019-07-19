@@ -2,7 +2,7 @@ package org.atoko.call4code.entrado.actors;
 
 import akka.actor.Props;
 import akka.actor.UntypedAbstractActor;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

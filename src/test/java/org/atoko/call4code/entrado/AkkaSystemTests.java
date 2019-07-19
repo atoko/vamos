@@ -4,7 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.actors.PersonActor;
-import org.atoko.call4code.entrado.model.PersonDetails;
+import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +34,6 @@ public class AkkaSystemTests {
                 );
         Future<Object> result = Patterns.ask(greeter, new PersonActor.PersonDetailsPoll(), 3L);
 
-        Assertions.assertEquals(new PersonDetails(name, name, id).id, ((PersonDetails)Await.result(result, Duration.create(3, TimeUnit.SECONDS))).id);
+        Assertions.assertEquals(new PersonDetails(name, name, id).personId, ((PersonDetails)Await.result(result, Duration.create(3, TimeUnit.SECONDS))).personId);
     }
 }

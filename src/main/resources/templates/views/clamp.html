@@ -2,9 +2,15 @@
     <header class="usa-header usa-header--basic" role="banner" th:fragment="header">
         <div class="usa-nav-container">
             <div class="usa-navbar">
-                <span th:if="${__authentication_current}" th:object="${__authentication_current}">
+
+                <p th:if="${__activity_current}" th:object="${__activity_current}">
                     <span th:text="*{getUniqueId()}" />
-                </span>
+                </p>
+
+
+                <p th:if="${__authentication_current}" th:object="${__authentication_current}">
+                    <span th:text="*{getUniqueId()}" />
+                </p>
 
                 <div class="usa-logo" personId="basic-logo">
                     <em class="usa-logo__text"><a href="/" title="Home" aria-label="Home">Vamos</a></em>

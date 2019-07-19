@@ -3,7 +3,7 @@
     <body>
         <header th:replace="views/clamp.html :: header"/>
         <div class="usa-header usa-header--basic" role="banner">
-            <form class="usa-form" action="/arrivals/signin" method="post">
+            <form class="usa-form" action="/www/signin" method="post">
                 <fieldset class="usa-fieldset">
                     <legend class="usa-legend">Sign In</legend>
 
@@ -12,8 +12,8 @@
                     <label class="usa-label" for="checkin-pin">Check In PIN</label>
                     <input class="usa-input" id="checkin-pin" maxlength="4" name="checkin-pin" required aria-required="true">
                     <p class="usa-form__note">
-                        <span title="Register-note" aria-controls="checkin-pin"><ul><li>Do you need a unique personId? <a
-                                href="/arrivals/register">Register</a></li></ul></span>
+                        <span title="Register-note" aria-controls="checkin-pin"><ul><li>Not registered yet? <a
+                                href="/www/arrivals/register">Register here</a></li></ul></span>
                     </p>
 
                     <input class="usa-button" type="submit" value="Sign In">

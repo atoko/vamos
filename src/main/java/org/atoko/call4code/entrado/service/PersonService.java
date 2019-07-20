@@ -31,12 +31,12 @@ public class PersonService {
     private DeviceService deviceService;
 
     private PersonActor.PersonDetailsPoll tellPersonDetailsCommand;
-    private DeviceSupervisor.PollPersonQuery pollPersonQueryCommand;
+    private DeviceSupervisor.PersonQueryPoll personQueryPollCommand;
 
     @PostConstruct
     private void buildCommands() {
         tellPersonDetailsCommand = new PersonActor.PersonDetailsPoll();
-        pollPersonQueryCommand = new DeviceSupervisor.PollPersonQuery();
+        personQueryPollCommand = new DeviceSupervisor.PersonQueryPoll();
     }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
@@ -88,7 +88,7 @@ public class PersonService {
 
     private Mono<List<PersonDetails>> getAll() {
 
-        return toMono(Patterns.ask(deviceService.get(), pollPersonQueryCommand, 5000))
+        return toMono(Patterns.ask(deviceService.get(), personQueryPollCommand, 5000))
                 .map((response) -> {
                     if (response instanceof List) {
                         return (List<PersonDetails>) response;

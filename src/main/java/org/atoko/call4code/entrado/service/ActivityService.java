@@ -35,16 +35,18 @@ public class ActivityService {
 
 
     private ActivityActor.ActivityDetailsPoll pollActivityDetails;
+    private ActivityActor.ActivityQueryPoll pollActivityQuery;
 
     @PostConstruct
     private void buildCommands() {
         pollActivityDetails = new ActivityActor.ActivityDetailsPoll();
+        pollActivityQuery = new ActivityActor.ActivityQueryPoll();
     }
 
     public Mono<ActivityDetails> create(String name) {
         String id = UUID.randomUUID().toString().substring(0, 8);
         Future<Object> create = Patterns.ask(
-                deviceService.child(() -> deviceService.path().child(ACTIVITY_MANAGER)),
+                deviceService.child((path) -> path.child(ACTIVITY_MANAGER)),
                 new ActivityManager.ActivityCreateMessage(
                         deviceService.getDeviceId(),
                         id,
@@ -66,14 +68,14 @@ public class ActivityService {
         if (!StringUtils.isEmpty(personId)) {
             return getById(personId).map(Collections::singletonList);
         } else {
-            return Mono.just(Collections.EMPTY_LIST);//getAll();
+            return getAll();
         }
 
     }
 //
     public Mono<ActivityDetails> getById(String activityId) {
         ActorSelection actorSelection = deviceService.child(
-                () -> deviceService.path().child(ACTIVITY_MANAGER).child(ACTIVITY_PREFIX + activityId)
+                (path) -> path.child(ACTIVITY_MANAGER).child(ACTIVITY_PREFIX + activityId)
         );
         return toMono(actorSelection.resolveOne(duration))
                 .onErrorResume((t) -> {
@@ -87,15 +89,14 @@ public class ActivityService {
                     }
                 });
     }
-//
-//    private Mono<List<PersonDetails>> getAll() {
-//
-//        return toMono(Patterns.ask(deviceService.get(), pollPersonQueryCommand, 5000))
-//                .map((response) -> {
-//                    if (response instanceof List) {
-//                        return (List<PersonDetails>) response;
-//                    }
-//                    return Collections.emptyList();
-//                });
-//    }
+
+    private Mono<List<ActivityDetails>> getAll() {
+        return toMono(Patterns.ask(deviceService.child((path) -> path.child(ACTIVITY_MANAGER)), pollActivityQuery, 5000))
+                .map((response) -> {
+                    if (response instanceof List) {
+                        return (List<ActivityDetails>) response;
+                    }
+                    return Collections.emptyList();
+                });
+    }
 }

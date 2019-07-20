@@ -28,7 +28,7 @@ public class PersonActor extends UntypedAbstractActor {
     public static Props props(String deviceId, String personId, String firstName, String lastName, String pin) {
         // You need to specify the actual type of the returned actor
         // since Java 8 lambdas have some runtime type information erased
-        return Props.create(PersonActor.class, () -> new PersonActor(personId, deviceId, firstName, lastName, pin));
+        return Props.create(PersonActor.class, () -> new PersonActor(deviceId, personId, firstName, lastName, pin));
     }
 
     // constructor

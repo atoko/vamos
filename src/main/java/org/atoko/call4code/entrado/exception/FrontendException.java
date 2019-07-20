@@ -10,7 +10,7 @@ public class FrontendException extends RuntimeException {
         super(e.getMessage(), e);
 
         if (redirect == null) {
-            redirect = "";
+            redirect = "/";
         }
         this.redirect = redirect;
     }

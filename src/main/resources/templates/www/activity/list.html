@@ -3,5 +3,25 @@
     <body>
         <header th:replace="views/clamp.html :: header"/>
         <h1>Activities</h1>
+        <table>
+            <tr>
+                <th>Id </th>
+                <th>Activity</th>
+                <th></th>
+            </tr>
+            <tr th:each="activity : ${_activities}">
+                <td th:text="*{activity.getUniqueId()}"></td>
+                <td>
+                    <a th:href="@{/www/activity/join/*{activity.getActivityId()}}">
+                        <span th:text="*{activity.name}"></span>
+                    </a>
+                </td>
+                <td>
+                    <a th:href="@{/www/activity/join/*{activity.getActivityId()}}">
+                        <button>Join</button>
+                    </a>
+                </td>
+            </tr>
+        </table>
     </body>
 </html>

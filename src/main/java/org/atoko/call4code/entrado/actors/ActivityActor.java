@@ -38,4 +38,7 @@ public class ActivityActor extends AbstractActor {
 
     public static class ActivityDetailsPoll {
     }
+
+    public static class ActivityQueryPoll {
+    }
 }

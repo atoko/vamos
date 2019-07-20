@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import oshi.SystemInfo;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
@@ -34,8 +35,8 @@ public class DeviceService {
         return actorRef;
     }
 
-    public ActorSelection child(Supplier<ActorPath> path) {
-        return actorSystem.actorSelection(path.get());
+    public ActorSelection child(Function<ActorPath, ActorPath> path) {
+        return actorSystem.actorSelection(path.apply(this.path()));
     }
 
     public ActorPath path() {

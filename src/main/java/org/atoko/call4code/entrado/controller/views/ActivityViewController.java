@@ -14,6 +14,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/www/activity")
 public class ActivityViewController {
@@ -23,14 +25,11 @@ public class ActivityViewController {
     @Autowired
     private ActivityController activityController;
 
-    @RequestMapping(value = {"/"})
+    @RequestMapping(value = {"", "/"})
     public Mono<String> index(Model model) {
-        return Mono.just(null).map((people) -> {
-            try {
-                model.addAttribute("_activities", objectMapper.writeValueAsString(people));
-            } catch (Exception e) {
-            }
-
+        return activityController.get(null).map((getResponse) -> {
+            List<ActivityDetails> activities = (List<ActivityDetails>) getResponse.getBody().get("data");
+            model.addAttribute("_activities", activities);
             return "www/activity/list";
         });
     }
@@ -66,18 +65,4 @@ public class ActivityViewController {
         });
 
     }
-//
-//    @RequestMapping(value = {"/list"})
-//    public Mono<String> list(
-//            Model model
-//    ) {
-//        return personService.get(null).map((people) -> {
-//            try {
-//                model.addAttribute("people", objectMapper.writeValueAsString(people));
-//            } catch (Exception e) {
-//            }
-//
-//            return "arrivals/list/index";
-//        });
-//    }
 }

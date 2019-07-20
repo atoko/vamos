@@ -64,7 +64,7 @@ public class DeviceSupervisor extends UntypedAbstractActor {
     }
 
     static PersonActor.PersonDetailsPoll tellCommand = new PersonActor.PersonDetailsPoll();
-    private void onReceive(PollPersonQuery tellListCommand) {
+    private void onReceive(PersonQueryPoll tellListCommand) {
         ArrayList<Mono<PersonDetails>> tellCommands = new ArrayList<>();
         Iterable<ActorRef> children = getContext().getChildren();
         children.forEach((c) -> {
@@ -90,8 +90,8 @@ public class DeviceSupervisor extends UntypedAbstractActor {
     public void onReceive(Object message) throws Throwable {
         if (message instanceof PersonAddMessage) {
             onReceive((PersonAddMessage) message);
-        } else if (message instanceof PollPersonQuery) {
-            onReceive((PollPersonQuery) message);
+        } else if (message instanceof PersonQueryPoll) {
+            onReceive((PersonQueryPoll) message);
         } else {
             unhandled(message);
         }
@@ -113,8 +113,8 @@ public class DeviceSupervisor extends UntypedAbstractActor {
         }
     }
 
-    public static class PollPersonQuery {
-        public PollPersonQuery() {
+    public static class PersonQueryPoll {
+        public PersonQueryPoll() {
         }
 
     }

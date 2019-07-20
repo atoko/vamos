@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
@@ -82,18 +83,31 @@ public class RootViewController {
                         .build()
                 );
 
-                return "redirect:/?query=";
+                return "redirect:/www?query=";
             }).onErrorReturn("redirect:/www/signin/?error=LOGIN_FAILED");
         });
-
     }
 
+    @RequestMapping(value = {"/www/logout"})
+    public Mono<String> logout(
+            ServerWebExchange serverWebExchange,
+            WebSession webSession
+    ) {
+        serverWebExchange
+                .getResponse()
+                .getCookies()
+                .remove(TOKEN_SYMBOLIC_NAME);
+
+        return webSession
+            .invalidate()
+            .map((v) -> "redirect:/www?query=");
+    }
     @RequestMapping(value = {"/www/menu"})
     public String menu(Principal principal) {
         if (principal != null) {
             return "www/menu/index";
         } else {
-            return "redirect:/";
+            return "redirect:/www";
         }
     }
 

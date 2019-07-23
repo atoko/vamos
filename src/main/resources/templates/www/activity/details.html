@@ -1,10 +1,11 @@
 <html xmlns:th="http://www.w3.org/1999/xhtml">
-    <head th:replace="views/includes.html :: head"> <head>
-    <body>
-        <header th:replace="views/clamp.html :: header"/>
-        <div th:object="${_activity}">
-            <h1 th:text="*{getName()}" />
-            <div th:text="*{getUniqueId()}" />
-        </div>
-    </body>
+<head th:replace="views/includes.html :: head">
+    <head>
+<body>
+<header th:replace="views/clamp.html :: header"/>
+<div th:object="${_activity_details}">
+    <h1 th:text="*{getName()}"/>
+    <div th:text="*{getUniqueId()}"/>
+</div>
+</body>
 </html>

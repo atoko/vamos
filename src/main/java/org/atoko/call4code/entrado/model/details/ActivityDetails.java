@@ -1,7 +1,7 @@
 package org.atoko.call4code.entrado.model.details;
 
 import lombok.Data;
-import org.atoko.call4code.entrado.actors.ActivityActor;
+import org.atoko.call4code.entrado.actors.activity.ActivityActor;
 
 @Data
 public class ActivityDetails {
@@ -9,13 +9,13 @@ public class ActivityDetails {
     public String activityId = "";
     public String name = "";
 
-    public ActivityDetails(ActivityActor actor) {
-        this.deviceId = actor.deviceId;
-        this.activityId = actor.activityId;
+    public ActivityDetails(ActivityActor.State actor) {
+        this.deviceId = actor.deviceId.id();
+        this.activityId = actor.activityId.id();
         this.name = actor.name;
     }
 
-    public ActivityDetails(String deviceId, String activityId,  String name) {
+    public ActivityDetails(String deviceId, String activityId, String name) {
         this.deviceId = deviceId;
         this.activityId = activityId;
         this.name = name;

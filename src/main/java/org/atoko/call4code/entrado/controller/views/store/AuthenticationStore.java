@@ -7,6 +7,7 @@ import org.atoko.call4code.entrado.service.meta.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Priority;
@@ -16,29 +17,35 @@ import java.security.Principal;
 @Priority(100)
 public class AuthenticationStore {
 
+    public static final String AUTHENTICATION_CURRENT_DEVICE_ID = "__authentication_current_deviceId";
+    public static final String AUTHENTICATION_CURRENT = "__authentication_current";
+
     @Autowired
     private DeviceService deviceService;
 
     @Autowired
     private PersonQueryController personQueryController;
 
-    @ModelAttribute("__authentication_current_deviceId")
+    @ModelAttribute(AUTHENTICATION_CURRENT_DEVICE_ID)
     public String deviceId() {
         return deviceService.getDeviceId();
     }
 
-    @ModelAttribute("__authentication_current")
+    @ModelAttribute(AUTHENTICATION_CURRENT)
     public Mono<PersonDetails> currentLoggedIn(
-            Principal principal
+            Principal principal,
+            ServerWebExchange serverWebExchange
     ) {
-        if (principal != null) {
+        Boolean isLoggingOut = serverWebExchange.getRequest().getPath().value().contains("/www/logout");
+
+        if (!isLoggingOut && principal != null) {
             return personQueryController.getPerson(principal.getName())
                     .doOnError((ex) -> {
                         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                         throw new FrontendException(cause, "/www/logout");
                     })
                     .map((getResponse) -> {
-                        return (PersonDetails)getResponse.getBody().get("data");
+                        return (PersonDetails) getResponse.getBody().get("data");
                     });
         } else {
             return null;

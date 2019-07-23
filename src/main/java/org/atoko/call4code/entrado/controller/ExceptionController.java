@@ -25,7 +25,7 @@ public class ExceptionController {
 
     @ExceptionHandler(value = FrontendException.class)
     public String defaultExceptionHandler(FrontendException ex) {
-        return "redirect:" + ex.getRedirect()  + "?";
+        return "redirect:" + ex.getRedirect();
     }
 
     @ExceptionHandler

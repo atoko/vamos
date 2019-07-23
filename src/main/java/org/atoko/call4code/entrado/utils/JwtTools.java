@@ -13,6 +13,9 @@ import java.util.Date;
 
 @ConfigurationProperties("entrado.jwt")
 public class JwtTools {
+    private static java.util.Base64.Encoder base64 = Base64.getEncoder();
+    private static JwtParser jwtParser;
+    private static Long expirationAsLong;
     String secret;
     String expiration;
 
@@ -45,18 +48,27 @@ public class JwtTools {
         return jwtParser;
     }
 
-    public Claims getAllClaimsFromToken(String token) { return parser().parseClaimsJws(token).getBody(); }
+    public Claims getAllClaimsFromToken(String token) {
+        return parser().parseClaimsJws(token).getBody();
+    }
+
     public String getUsernameFromToken(String token) {
         return getAllClaimsFromToken(token).getIssuer();
     }
-    public Date getExpirationDateFromToken(String token) { return getAllClaimsFromToken(token).getExpiration(); }
+
+    public Date getExpirationDateFromToken(String token) {
+        return getAllClaimsFromToken(token).getExpiration();
+    }
+
     public boolean isTokenExpired(String token) {
         Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
+
     public boolean isTokenValid(String token) {
         return !isTokenExpired(token) && parser().isSigned(token);
     }
+
     public String generateToken(User user) {
         Date created = new Date();
         Date expiration = new Date(created.getTime() + getExpiration() * 1000);
@@ -72,9 +84,4 @@ public class JwtTools {
                 .signWith(SignatureAlgorithm.HS256, base64.encodeToString(secret.getBytes()))
                 .compact();
     }
-
-
-    private static java.util.Base64.Encoder base64 = Base64.getEncoder();
-    private static JwtParser jwtParser;
-    private static Long expirationAsLong;
 }

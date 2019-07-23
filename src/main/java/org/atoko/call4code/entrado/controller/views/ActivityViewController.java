@@ -5,6 +5,7 @@ import org.atoko.call4code.entrado.controller.api.activity.ActivityController;
 import org.atoko.call4code.entrado.controller.views.store.ActivityStore;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/www/activity")
+@PreAuthorize("hasRole('ROLE_PERSON')")
 public class ActivityViewController {
 
     static private ObjectMapper objectMapper = new ObjectMapper();
@@ -29,7 +31,7 @@ public class ActivityViewController {
     public Mono<String> index(Model model) {
         return activityController.get(null).map((getResponse) -> {
             List<ActivityDetails> activities = (List<ActivityDetails>) getResponse.getBody().get("data");
-            model.addAttribute("_activities", activities);
+            model.addAttribute("_activity_activities", activities);
             return "www/activity/list";
         });
     }
@@ -41,14 +43,16 @@ public class ActivityViewController {
     ) {
         return activityController.get(activityId).map((response) -> {
             ActivityDetails activityDetails = (ActivityDetails) response.getBody().get("data");
-            model.addAttribute("_activity", activityDetails);
+            model.addAttribute("_activity_details", activityDetails);
 
             return "www/activity/details";
         });
     }
 
     @RequestMapping(value = {"/create"})
-    public String create() { return "www/activity/create/index"; }
+    public Mono<String> create() {
+        return Mono.just("www/activity/create/index");
+    }
 
     @PostMapping("/create/post")
     public Mono<String> postCreate(

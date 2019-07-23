@@ -3,7 +3,7 @@ package org.atoko.call4code.entrado;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
-import org.atoko.call4code.entrado.actors.PersonActor;
+import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

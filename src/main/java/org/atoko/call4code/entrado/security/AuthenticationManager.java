@@ -36,8 +36,8 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                 roles = (List) roles
                         .stream()
                         .map((role) -> new SimpleGrantedAuthority(
-                                (String) role
-                        )
+                                        (String) role
+                                )
                         ).collect(Collectors.toList());
             } else {
                 roles = List.of();

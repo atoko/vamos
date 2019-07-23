@@ -2,7 +2,7 @@ package org.atoko.call4code.entrado.model.details;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.atoko.call4code.entrado.actors.PersonActor;
+import org.atoko.call4code.entrado.actors.person.PersonActor;
 
 @Data
 public class PersonDetails {
@@ -14,9 +14,9 @@ public class PersonDetails {
     @JsonIgnore
     public String pin = "";
 
-    public PersonDetails(PersonActor actor) {
-        this.deviceId = actor.deviceId;
-        this.personId = actor.personId;
+    public PersonDetails(PersonActor.State actor) {
+        this.deviceId = actor.deviceId.id();
+        this.personId = actor.personId.id();
         this.firstName = actor.firstName;
         this.lastName = actor.lastName;
         this.pin = actor.pin;

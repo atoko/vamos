@@ -1,25 +1,25 @@
 <html xmlns:th="http://www.w3.org/1999/xhtml">
-    <head th:replace="views/includes.html :: head"/>
-    <body>
-        <header th:replace="views/clamp.html :: header"/>
-        <div class="usa-header usa-header--basic" role="banner">
-            <form class="usa-form" action="/www/arrivals/register/post" method="post">
-                <fieldset class="usa-fieldset">
-                    <legend class="usa-legend">Register</legend>
+<head th:replace="views/includes.html :: head"/>
+<body>
+<header th:replace="views/clamp.html :: header"/>
+<div class="usa-header usa-header--basic" role="banner">
+    <form action="/www/arrivals/register/post" class="usa-form" method="post">
+        <fieldset class="usa-fieldset">
+            <legend class="usa-legend">Register</legend>
 
-                    <label class="usa-label" for="first-name">First name</label>
-                    <input class="usa-input" id="first-name" name="first-name" type="text" required aria-required="true">
+            <label class="usa-label" for="first-name">First name</label>
+            <input aria-required="true" class="usa-input" id="first-name" name="first-name" required type="text">
 
-                    <label class="usa-label" for="last-name">Last name</label>
-                    <input class="usa-input" id="last-name" name="last-name" type="text" required aria-required="true">
+            <label class="usa-label" for="last-name">Last name</label>
+            <input aria-required="true" class="usa-input" id="last-name" name="last-name" required type="text">
 
-                    <label class="usa-label" for="checkin-pin">PIN</label>
-                    <input class="usa-input" id="checkin-pin" name="checkin-pin" type="text" required aria-required="true">
+            <label class="usa-label" for="checkin-pin">PIN</label>
+            <input aria-required="true" class="usa-input" id="checkin-pin" name="checkin-pin" required type="text">
 
-                    <input class="usa-button" type="submit" value="Register">
+            <input class="usa-button" type="submit" value="Register">
 
-                </fieldset>
-            </form>
-        </div>
-    </body>
+        </fieldset>
+    </form>
+</div>
+</body>
 </html>

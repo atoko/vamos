@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class User {
+    static private List<Role> personRoles = List.of(Role.ROLE_PERSON);
     String id;
     String session;
     List<Role> roles;
@@ -14,6 +15,14 @@ public class User {
         this.id = id;
         this.session = session;
         this.roles = roles;
+    }
+
+    static public User person(String id, String session) {
+        if (session == null) {
+            session = "";
+        }
+
+        return new User(id, session, personRoles);
     }
 
     public String getId() {
@@ -26,15 +35,6 @@ public class User {
 
     public List<Role> getRoles() {
         return roles;
-    }
-
-    static private List<Role> personRoles = List.of(Role.ROLE_PERSON);
-    static public User person(String id, String session) {
-        if (session == null) {
-            session = "";
-        }
-
-        return new User(id, session, personRoles);
     }
 
 }

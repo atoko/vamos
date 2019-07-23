@@ -1,16 +1,14 @@
 package org.atoko.call4code.entrado.controller.views;
 
 import org.atoko.call4code.entrado.controller.api.AuthenticationController;
-import org.atoko.call4code.entrado.model.details.PersonDetails;
+import org.atoko.call4code.entrado.controller.api.person.PersonQueryController;
 import org.atoko.call4code.entrado.service.meta.ActorSystemService;
-import org.atoko.call4code.entrado.utils.JwtTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,10 +21,8 @@ import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
-import java.util.Date;
-import java.util.Map;
 
-import static org.atoko.call4code.entrado.controller.api.AuthenticationController.TOKEN_SYMBOLIC_NAME;
+import static org.atoko.call4code.entrado.controller.api.AuthenticationController.AUTHENTICATION_TOKEN_NAME;
 
 @Controller
 public class RootViewController {
@@ -37,28 +33,28 @@ public class RootViewController {
     @Autowired
     private AuthenticationController authenticationController;
 
+    @Autowired
+    private PersonQueryController personQueryController;
+
     @Bean
     public RouterFunction<ServerResponse> assets() {
         return RouterFunctions.resources("/assets/**", new ClassPathResource("assets/"));
     }
 
     @RequestMapping(value = {"/", "/www"})
-    public String index(ServerWebExchange serverWebExchange, Principal principal) {
+    public Mono<String> index(ServerWebExchange serverWebExchange, Principal principal) {
         if (principal != null) {
-            return "redirect:/www/menu";
+            return Mono.just("redirect:/www/menu");
         } else {
-            return "redirect:/www/signin";
+            return Mono.just("redirect:/www/signin");
         }
     }
 
-    @Autowired
-    private JwtTools jwtTools;
-
     @RequestMapping(value = {"/www/signin"})
-    public String index(
+    public Mono<String> index(
             @RequestParam(required = false) String error
     ) {
-        return "www/signin/index";
+        return Mono.just("www/signin/index");
     }
 
     @PostMapping("/www/signin")
@@ -76,11 +72,11 @@ public class RootViewController {
             ).map((authResponse) -> {
                 webExchange.getResponse().addCookie(
                         ResponseCookie.from(
-                                TOKEN_SYMBOLIC_NAME,
-                                authResponse.getHeaders().getFirst(TOKEN_SYMBOLIC_NAME)
+                                AUTHENTICATION_TOKEN_NAME,
+                                authResponse.getHeaders().getFirst(AUTHENTICATION_TOKEN_NAME)
                         )
-                        .path("/")
-                        .build()
+                                .path("/")
+                                .build()
                 );
 
                 return "redirect:/www?query=";
@@ -96,12 +92,18 @@ public class RootViewController {
         serverWebExchange
                 .getResponse()
                 .getCookies()
-                .remove(TOKEN_SYMBOLIC_NAME);
+                .set(AUTHENTICATION_TOKEN_NAME,
+                        ResponseCookie
+                                .from(AUTHENTICATION_TOKEN_NAME, "")
+                                .path("/")
+                                .build()
+                );
 
-        return webSession
-            .invalidate()
-            .map((v) -> "redirect:/www?query=");
+        webSession.getAttributes().clear();
+
+        return Mono.just("www/signin/index");
     }
+
     @RequestMapping(value = {"/www/menu"})
     public String menu(Principal principal) {
         if (principal != null) {

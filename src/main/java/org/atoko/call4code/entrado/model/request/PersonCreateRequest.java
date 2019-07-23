@@ -17,7 +17,7 @@ public class PersonCreateRequest {
     public PersonCreateRequest(String firstName, String lastName, String pin) {
 
         this.firstName = firstName;
-        this.lastName =lastName;
+        this.lastName = lastName;
         this.pin = pin;
     }
 

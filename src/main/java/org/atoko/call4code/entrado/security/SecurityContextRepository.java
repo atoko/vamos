@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import static org.atoko.call4code.entrado.controller.api.AuthenticationController.TOKEN_SYMBOLIC_NAME;
+import static org.atoko.call4code.entrado.controller.api.AuthenticationController.AUTHENTICATION_TOKEN_NAME;
 
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
@@ -26,7 +26,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        HttpCookie cookie = exchange.getRequest().getCookies().getFirst(TOKEN_SYMBOLIC_NAME);
+        HttpCookie cookie = exchange.getRequest().getCookies().getFirst(AUTHENTICATION_TOKEN_NAME);
         if (cookie != null) {
             return this.authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(

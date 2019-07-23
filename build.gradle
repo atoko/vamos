@@ -57,10 +57,13 @@ dependencies {
 	implementation 'org.springframework.session:spring-session-core'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	implementation 'org.scala-lang.modules:scala-java8-compat_2.11:0.9.0'
-	implementation 'com.typesafe.akka:akka-actor_2.11:2.5.23'
-	implementation 'com.typesafe.akka:akka-persistence_2.11:2.5.23'
-	implementation 'org.scala-lang:scala-library:2.11.8'
+	implementation 'org.scala-lang.modules:scala-java8-compat_2.13:0.9.0'
+	implementation 'com.typesafe.akka:akka-actor-typed_2.13:2.6.0-M4'
+	implementation 'com.typesafe.akka:akka-discovery_2.13:2.6.0-M4'
+	implementation 'com.typesafe.akka:akka-persistence-typed_2.13:2.6.0-M4'
+	implementation 'com.typesafe.akka:akka-cluster-sharding-typed_2.13:2.6.0-M4'
+	implementation 'com.typesafe.akka:akka-serialization-jackson_2.13:2.6.0-M4'
+	implementation 'org.scala-lang:scala-library:2.13.0'
 
 	implementation 'com.github.oshi:oshi-core:3.13.3'
 	implementation 'net.java.dev.jna:jna:5.2.0'

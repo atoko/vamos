@@ -1,57 +1,66 @@
 package org.atoko.call4code.entrado.service;
 
-import akka.pattern.Patterns;
-import org.atoko.call4code.entrado.actors.PersonActor;
-import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
-import org.atoko.call4code.entrado.exception.ResponseCodeException;
+import akka.actor.typed.ActorRef;
+import akka.cluster.sharding.typed.javadsl.EntityRef;
+import org.atoko.call4code.entrado.actors.person.PersonActor;
+import org.atoko.call4code.entrado.actors.person.PersonManager;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
+import org.atoko.call4code.entrado.service.meta.ActorSystemService;
 import org.atoko.call4code.entrado.service.meta.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
-import scala.concurrent.Future;
-import scala.concurrent.duration.FiniteDuration;
 
-import javax.annotation.PostConstruct;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletionStage;
 
-import static org.atoko.call4code.entrado.actors.PersonActor.PERSON_PREFIX;
 import static org.atoko.call4code.entrado.utils.MonoConverter.toMono;
 
 @Component
 public class PersonService {
 
-    FiniteDuration duration = FiniteDuration.create(1, TimeUnit.SECONDS);
+    static public Duration duration = Duration.ofSeconds(4);
+
     @Autowired
     private DeviceService deviceService;
 
-    private PersonActor.PersonDetailsPoll tellPersonDetailsCommand;
-    private DeviceSupervisor.PersonQueryPoll personQueryPollCommand;
+    @Autowired
+    private ActorSystemService actorSystemService;
 
-    @PostConstruct
-    private void buildCommands() {
-        tellPersonDetailsCommand = new PersonActor.PersonDetailsPoll();
-        personQueryPollCommand = new DeviceSupervisor.PersonQueryPoll();
+    private EntityRef<PersonManager.Command> getEntityRef() {
+        return actorSystemService.child(
+                PersonManager.entityTypeKey,
+                PersonManager.getEntityId(deviceService.getDeviceId())
+        );
+    }
+
+    private EntityRef<PersonManager.Command> getEntityRef(String personId) {
+        return actorSystemService.child(
+                PersonActor.entityTypeKey,
+                personId
+        );
     }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
         String personId = UUID.randomUUID().toString().substring(0, 8);
-        Future<Object> create = Patterns.ask(
-            deviceService.get(),
-            new DeviceSupervisor.PersonAddMessage(
-                    deviceService.getDeviceId(),
-                    personId,
-                    firstName,
-                    lastName,
-                    pin
-            ),
-            5000
+
+        CompletionStage<Boolean> create = actorSystemService.get().ask(
+                (replyTo) ->
+                        new PersonManager.PersonCreateCommand(
+                                (ActorRef) replyTo,
+                                deviceService.getDeviceId(),
+                                personId,
+                                firstName,
+                                lastName,
+                                pin
+                        ),
+                duration
         );
+
         return toMono(create).map((na) -> {
             return new PersonDetails(
                     deviceService.getDeviceId(),
@@ -68,32 +77,16 @@ public class PersonService {
         if (!StringUtils.isEmpty(id)) {
             return getById(id).map(Collections::singletonList);
         } else {
-            return getAll();
+            return getAll().map(List::of);
         }
     }
 
     public Mono<PersonDetails> getById(String id) {
-        return toMono(deviceService.child(() -> deviceService.path().child(PERSON_PREFIX + id)).resolveOne(duration))
-                .onErrorResume((t) -> {
-                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND", "Person was not found");
-                })
-                .flatMap((ref) -> toMono(Patterns.ask(ref, tellPersonDetailsCommand, 5000))).map((response) -> {
-                    if (response instanceof PersonDetails) {
-                        return ((PersonDetails) response);
-                    } else {
-                        throw new ResponseCodeException(HttpStatus.LOOP_DETECTED, "PERSON_DETAILS_RESPONSE_INVALID", "Could not process message");
-                    }
-                });
+        return toMono(actorSystemService.get().ask((replyTo) ->
+                new PersonActor.PersonDetailsPoll((ActorRef) replyTo, id), duration));
     }
 
-    private Mono<List<PersonDetails>> getAll() {
-
-        return toMono(Patterns.ask(deviceService.get(), personQueryPollCommand, 5000))
-                .map((response) -> {
-                    if (response instanceof List) {
-                        return (List<PersonDetails>) response;
-                    }
-                    return Collections.emptyList();
-                });
+    private Mono<PersonDetails[]> getAll() {
+        return toMono(getEntityRef().ask(PersonManager.PersonQueryPoll::new, duration));
     }
 }

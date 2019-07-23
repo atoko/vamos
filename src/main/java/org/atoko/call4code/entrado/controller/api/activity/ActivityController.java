@@ -1,8 +1,10 @@
 package org.atoko.call4code.entrado.controller.api.activity;
 
+import org.atoko.call4code.entrado.exception.ResponseCodeException;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.service.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
@@ -33,6 +35,15 @@ public class ActivityController {
     ) {
         return activityService.get(id).map((activityList -> {
             if (!StringUtils.isEmpty(id)) {
+                if (activityList.isEmpty()) {
+                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
+                }
+
+                ActivityDetails activity = activityList.get(0);
+                if (activity instanceof ActivityDetails.ActivityNullDetails) {
+                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
+                }
+
                 return ResponseEntity.ok(Collections.singletonMap("data", activityList.get(0)));
             } else {
                 return ResponseEntity.ok(Collections.singletonMap("data", activityList));

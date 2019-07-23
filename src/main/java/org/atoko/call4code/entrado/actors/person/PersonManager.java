@@ -54,9 +54,9 @@ public class PersonManager extends EventSourcedEntity<
                         (state, command) -> {
                             ActorRef child = actorContext.spawn(
                                     new PersonActor(
-                                            command.getPersonId()
+                                            command.personId
                                     ),
-                                    PERSON_PREFIX + command.getPersonId()
+                                    PERSON_PREFIX + command.personId
                             );
                             child.tell(command);
                             map.put(command.personId, new PersonDetails(

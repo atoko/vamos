@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.atoko.call4code.entrado.actors.activity.ActivityActor.ACTIVITY_PREFIX;
-import static org.atoko.call4code.entrado.actors.person.PersonActor.PERSON_PREFIX;
 
 public class ActivityManager extends EventSourcedEntity<
         ActivityManager.Command, ActivityManager.Event, ActivityManager.State
@@ -54,7 +53,9 @@ public class ActivityManager extends EventSourcedEntity<
                 .onCommand(ActivityCreateCommand.class,
                         (state, event) -> {
                             ActorRef child = actorContext.spawn(
-                                    new ActivityActor(event.getActivityId()),
+                                    new ActivityActor(
+                                            event.getActivityId())
+                                    ,
                                     ACTIVITY_PREFIX + event.getActivityId()
                             );
                             child.tell(event);
@@ -67,10 +68,12 @@ public class ActivityManager extends EventSourcedEntity<
                         })
                 .onCommand(ActivityActor.ActivityDetailsPoll.class,
                         (state, command) -> {
-                            actorContext.getChild(PERSON_PREFIX + command.id)
-                                    .ifPresent((action) -> {
+                            actorContext.getChild(ACTIVITY_PREFIX + command.id)
+                                    .ifPresentOrElse((action) -> {
                                         ActorRef child = (ActorRef) action;
                                         child.tell(command);
+                                    }, () -> {
+                                        command.replyTo.tell(new ActivityDetails.ActivityNullDetails());
                                     });
                             return Effect().none();
                         })

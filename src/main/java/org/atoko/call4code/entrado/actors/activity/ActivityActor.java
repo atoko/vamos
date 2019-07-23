@@ -31,6 +31,10 @@ public class ActivityActor extends EventSourcedEntity<
                 .onCommand(ActivityManager.ActivityCreateCommand.class,
                         command -> Effect().persist(new ActivityCreatedEvent(command))
                 )
+                .onCommand(ActivityActor.ActivityDetailsPoll.class,
+                        (state, command) -> Effect().none().thenRun(() -> command.replyTo.tell(new ActivityDetails(
+                                state
+                        ))))
                 .build();
     }
 

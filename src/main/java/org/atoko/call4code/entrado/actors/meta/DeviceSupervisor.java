@@ -9,6 +9,7 @@ import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
 import org.atoko.call4code.entrado.actors.activity.ActivityActor;
+import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
 import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
@@ -50,18 +51,12 @@ public class DeviceSupervisor extends EventSourcedEntity<
                     return Effect().none();
                 })
                 .onAnyCommand((state, command) -> {
-                    if (command instanceof PersonManager.PersonCreateCommand
-                            || command instanceof PersonManager.PersonQueryPoll
-                            || command instanceof PersonActor.PersonDetailsPoll
-                    ) {
+                    if (command instanceof PersonManager.Command) {
                         personManager.tell(command);
-                    } else if (command instanceof ActivityManager.ActivityCreateCommand
-                            || command instanceof ActivityManager.ActivityQueryPoll
-                            || command instanceof ActivityActor.ActivityDetailsPoll
-
-                    ) {
+                    } else if (command instanceof ActivityCommands.Command) {
                         activityManager.tell(command);
                     }
+                    
                     return Effect().none();
                 });
     }

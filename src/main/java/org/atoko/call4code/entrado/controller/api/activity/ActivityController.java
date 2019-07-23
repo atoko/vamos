@@ -50,4 +50,20 @@ public class ActivityController {
             }
         }));
     }
+
+    @PostMapping("/activity/join")
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> join(
+            @RequestParam(value = "filter.activityId") String activityId,
+            @RequestBody String personId
+    ) {
+        return activityService.join(activityId, personId)
+                .map((activity) -> {
+                    if (activity instanceof ActivityDetails.ActivityNullDetails) {
+                        throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
+                    }
+
+                    return ResponseEntity.ok(Collections.singletonMap("data", activity));
+                });
+    }
+
 }

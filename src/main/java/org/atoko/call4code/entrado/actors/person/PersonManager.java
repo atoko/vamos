@@ -72,10 +72,12 @@ public class PersonManager extends EventSourcedEntity<
                 .onCommand(PersonActor.PersonDetailsPoll.class,
                         (state, command) -> {
                             actorContext.getChild(PERSON_PREFIX + command.id)
-                                    .ifPresent((action) -> {
-                                        ActorRef child = (ActorRef) action;
-                                        child.tell(command);
-                                    });
+                                    .ifPresentOrElse((action) -> {
+                                            ActorRef child = (ActorRef) action;
+                                            child.tell(command);
+                                        },
+                                        () -> command.replyTo.tell(new PersonDetails.PersonNullDetails())
+                                    );
                             return Effect().none();
                         })
                 .onCommand(PersonQueryPoll.class,

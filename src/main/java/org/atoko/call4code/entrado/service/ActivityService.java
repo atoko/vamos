@@ -2,6 +2,7 @@ package org.atoko.call4code.entrado.service;
 
 import akka.actor.typed.ActorRef;
 import org.atoko.call4code.entrado.actors.activity.ActivityActor;
+import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
 import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.service.meta.ActorSystemService;
@@ -32,7 +33,7 @@ public class ActivityService {
     public Mono<ActivityDetails> create(String name) {
         String id = UUID.randomUUID().toString().substring(0, 8);
         CompletionStage<Boolean> create = actorSystemService.get().ask((replyTo) ->
-                        new ActivityManager.ActivityCreateCommand(
+                        new ActivityCommands.ActivityCreateCommand(
                                 (ActorRef) replyTo,
                                 deviceService.getDeviceId(),
                                 id,
@@ -45,9 +46,15 @@ public class ActivityService {
             return new ActivityDetails(
                     deviceService.getDeviceId(),
                     id,
-                    name
+                    name,
+                    Collections.EMPTY_LIST
             );
         });
+    }
+
+    public Mono<ActivityDetails> join(String activityId, String personId) {
+        return toMono(actorSystemService.get().ask((replyTo) ->
+                new ActivityCommands.ActivityJoinCommand((ActorRef) replyTo, activityId, personId), duration));
     }
 
     public Mono<List<ActivityDetails>> get(String id) {
@@ -60,11 +67,11 @@ public class ActivityService {
 
     public Mono<ActivityDetails> getById(String id) {
         return toMono(actorSystemService.get().ask((replyTo) ->
-                new ActivityActor.ActivityDetailsPoll((ActorRef) replyTo, id), duration));
+                new ActivityCommands.ActivityDetailsPoll((ActorRef) replyTo, id), duration));
     }
 
     private Mono<ActivityDetails[]> getAll() {
         return toMono(actorSystemService.get().ask((replyTo) ->
-                new ActivityManager.ActivityQueryPoll((ActorRef) replyTo), duration));
+                new ActivityCommands.ActivityQueryPoll((ActorRef) replyTo), duration));
     }
 }

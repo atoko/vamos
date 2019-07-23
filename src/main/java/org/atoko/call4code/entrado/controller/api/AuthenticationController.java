@@ -33,6 +33,9 @@ public class AuthenticationController {
     ) {
         try {
             return personService.getById(id).map((person -> {
+                if (person instanceof PersonDetails.PersonNullDetails) {
+                    throw new RuntimeException();
+                }
                 if (!person.pin.equals(pin)) {
                     throw new RuntimeException();
                 }

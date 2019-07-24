@@ -1,11 +1,7 @@
 <!-- $theme: gaia -->
 
 # Vamos Volunteer Identity Platform and Incident Command System
-
-- - - - - - - - - - - - - - - - - - - - - - - - - q
-
           ## Making mesh networks functional
----
 ##### What is the National Incident Management System (NIMS)? 
 
 NIMS is a comprehensive, national approach to incident management that is applicable at all jurisdictional levels. It is intended to:
@@ -15,7 +11,6 @@ regardless of size, location or complexity.
 incident management activities.
 - Provide a common standard for overall incident management. 
           
----
 ## Why Vamos?
 
 - #### Portability 
@@ -26,7 +21,6 @@ incident management activities.
   - Local network allows for eventual replication while providing full uptime
   - Cloud database based backup and discovery features
 
----
 - #### Scalability
   - Can be run in a cluster, allowing for many different availibility configurations  
   - Naturally distributed, so it is possible for a node to send events to another node on the network. 
@@ -37,23 +31,18 @@ incident management activities.
   - System keeps a full record of events, so that each change can be replayed and researched.
 
 
----
 # Notes
 
 - Everything is saved to an in-memory database.
 - Error handling was not covered. You might get lucky and find bugs
 - Tested with Google Chrome 
----
-# Demo
-
----
 
 ### Future implementation
 
 - Operationalization
 	- Provisioning
 	- Clustering
-- IBM DB2 Event Store 	
+- Persistent storage	
 - Scheduling and Queues 
 - Procurement and Inventory 
 

@@ -1,15 +1,8 @@
 <!-- $theme: gaia -->
 
 # Vamos Volunteer Identity Platform and Incident Command System
-          ## Making mesh networks functional
-##### What is the National Incident Management System (NIMS)? 
+## Making mesh networks functional
 
-NIMS is a comprehensive, national approach to incident management that is applicable at all jurisdictional levels. It is intended to:
-- Be applicable across a full spectrum of potential incidents, hazards, and impacts,
-regardless of size, location or complexity.
-- Improve coordination and cooperation between public and private entities in a variety of
-incident management activities.
-- Provide a common standard for overall incident management. 
           
 ## Why Vamos?
 
@@ -30,11 +23,20 @@ incident management activities.
 - #### Accountability
   - System keeps a full record of events, so that each change can be replayed and researched.
 
+This is all meant to support the National Incident Management System.
+
+##### What is the National Incident Management System (NIMS)? 
+
+NIMS is a comprehensive, national approach to incident management that is applicable at all jurisdictional levels. It is intended to:
+- Be applicable across a full spectrum of potential incidents, hazards, and impacts,
+regardless of size, location or complexity.
+- Improve coordination and cooperation between public and private entities in a variety of
+incident management activities.
+- Provide a common standard for overall incident management. 
 
 # Notes
 
 - Everything is saved to an in-memory database.
-- Error handling was not covered. You might get lucky and find bugs
 - Tested with Google Chrome 
 
 ### Future implementation

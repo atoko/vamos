@@ -13,7 +13,6 @@ public abstract class GenesisBehavior {
                                     return SpawnProtocol.behavior();
                                 });
                     });
-    public static String deviceId;
 
     private GenesisBehavior() {
     }

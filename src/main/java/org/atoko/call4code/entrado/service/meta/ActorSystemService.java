@@ -23,7 +23,6 @@ public class ActorSystemService {
 
     public ActorSystemService(@Autowired DeviceService deviceService) {
         Config completeConfig = ConfigFactory.load();
-        GenesisBehavior.deviceId = deviceService.getDeviceId();
         this.actorSystem = ActorSystem.create(GenesisBehavior.main, "root-system", completeConfig);
         this.clusterSharding = ClusterSharding.get(actorSystem);
         this.deviceService = deviceService;
@@ -31,10 +30,9 @@ public class ActorSystemService {
         clusterSharding.init(
                 Entity.ofEventSourcedEntity(
                         DeviceSupervisor.entityTypeKey,
-                        (context) -> new DeviceSupervisor(deviceService.getDeviceId(), context.getActorContext())
+                        (context) -> new DeviceSupervisor(context.getEntityId(), context.getActorContext())
                 )
         );
-
 
         get().tell(
                 new DeviceSupervisor.GenesisCommand(deviceService.getDeviceId())
@@ -56,7 +54,7 @@ public class ActorSystemService {
     }
 
     public EntityRef get() {
-        return child(DeviceSupervisor.entityTypeKey, "DeviceSupervisor;" + deviceService.getDeviceId());
+        return child(DeviceSupervisor.entityTypeKey, DeviceSupervisor.getEntityId(deviceService.getDeviceId()));
     }
 
     public EntityRef child(EntityTypeKey entityTypeKey, String identifier) {

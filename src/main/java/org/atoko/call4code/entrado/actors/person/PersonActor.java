@@ -1,6 +1,8 @@
 package org.atoko.call4code.entrado.actors.person;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.PersistenceId;
@@ -11,13 +13,22 @@ import org.atoko.call4code.entrado.model.details.PersonDetails;
 public class PersonActor extends EventSourcedEntity<
         PersonManager.Command, PersonManager.Event, PersonActor.State
         > {
-    public static String PERSON_PREFIX = "person;";
-    public static EntityTypeKey<PersonManager.Command> entityTypeKey = EntityTypeKey.create(PersonManager.Command.class, "PersonActor;");
+    public static String PERSON_PREFIX = "person*";
+    public static String getEntityId(String sourceId, String personId) {
+        return PERSON_PREFIX + personId + "&" + sourceId;
+    }
+    public static EntityTypeKey<PersonManager.Command> entityTypeKey = EntityTypeKey.create(PersonManager.Command.class, "PersonActor*+");
 
-    public PersonActor(String personId) {
-        super(entityTypeKey, personId);
+    public PersonActor(String sourceId, String personId) {
+        super(entityTypeKey, getEntityId(sourceId, personId));
+    }
+    public static Behavior<PersonManager.Command> behavior(String sourceId, String personId) {
+        return Behaviors.setup(actorContext -> new PersonActor(sourceId, personId));
     }
 
+    public boolean shouldSnapshot(State state, PersonManager.Event event, long sequenceNr) {
+        return event instanceof PersonCreatedEvent;
+    }
     // constructor
     @Override
     public State emptyState() {
@@ -48,7 +59,7 @@ public class PersonActor extends EventSourcedEntity<
     }
 
     public static class State {
-        public PersistenceId deviceId = PersistenceId.apply("CAFE");
+        public PersistenceId sourceId = PersistenceId.apply("CAFE");
         public PersistenceId personId = PersistenceId.apply("BEBA");
         public String firstName = "";
         public String lastName = "";
@@ -58,7 +69,7 @@ public class PersonActor extends EventSourcedEntity<
         }
 
         public State(PersonActor.PersonCreatedEvent event) {
-            this.deviceId = PersistenceId.apply(event.getDeviceId());
+            this.sourceId = PersistenceId.apply(event.getDeviceId());
             this.personId = PersistenceId.apply(event.getPersonId());
             this.firstName = event.firstName;
             this.lastName = event.lastName;
@@ -70,7 +81,7 @@ public class PersonActor extends EventSourcedEntity<
         }
     }
 
-    public static class PersonDetailsPoll implements PersonManager.Command {
+    public static class PersonDetailsPoll extends PersonManager.Command {
         ActorRef<PersonDetails> replyTo;
         String id;
 
@@ -80,7 +91,7 @@ public class PersonActor extends EventSourcedEntity<
         }
     }
 
-    public static class PersonCreatedEvent implements PersonManager.Event {
+    public static class PersonCreatedEvent extends PersonManager.Event {
         String deviceId;
         String personId;
         String firstName;
@@ -98,9 +109,9 @@ public class PersonActor extends EventSourcedEntity<
         public PersonCreatedEvent(PersonManager.PersonCreateCommand command) {
             this.deviceId = command.deviceId;
             this.personId = command.personId;
-            this.firstName = command.getFirstName();
-            this.lastName = command.getLastName();
-            this.pin = command.getPin();
+            this.firstName = command.firstName;
+            this.lastName = command.lastName;
+            this.pin = command.pin;
         }
 
         public String getDeviceId() {

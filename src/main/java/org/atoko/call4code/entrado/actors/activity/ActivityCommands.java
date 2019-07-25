@@ -8,16 +8,16 @@ import java.util.function.Supplier;
 
 public class ActivityCommands {
 
-    public interface Command {
+    public static class Command {
     }
 
-    public abstract static class ActivityTargetedCommand implements Command {
+    public abstract static class ActivityTargetedCommand extends Command {
         String activityId;
         ActorRef<ActivityDetails> replyTo;
     }
 
     @Data
-    public static class ActivityCreateCommand implements Command {
+    public static class ActivityCreateCommand extends Command {
         ActorRef replyTo;
         String deviceId;
         String activityId;
@@ -52,7 +52,7 @@ public class ActivityCommands {
 
 
     @Data
-    public static class ActivityQueryPoll implements Command {
+    public static class ActivityQueryPoll extends Command {
         ActorRef<ActivityDetails[]> replyTo;
 
         public ActivityQueryPoll(ActorRef<ActivityDetails[]> replyTo) {

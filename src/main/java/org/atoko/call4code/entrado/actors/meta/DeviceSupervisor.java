@@ -14,6 +14,8 @@ import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
 
+import java.util.UUID;
+
 import static org.atoko.call4code.entrado.actors.activity.ActivityManager.ACTIVITY_MANAGER;
 import static org.atoko.call4code.entrado.actors.person.PersonManager.PERSON_MANAGER;
 
@@ -22,23 +24,23 @@ public class DeviceSupervisor extends EventSourcedEntity<
         > {
 
     public static EntityTypeKey<Object> entityTypeKey =
-            EntityTypeKey.create(Object.class, "DeviceSupervisor;");
+            EntityTypeKey.create(Object.class, "*DeviceSupervisor+");
     ActorRef personManager;
     ActorRef activityManager;
     private ActorContext actorContext;
 
-    public DeviceSupervisor(String deviceId, ActorContext actorContext) {
-        super(entityTypeKey, "DeviceSupervisor_" + deviceId);
+    public DeviceSupervisor(String persistenceId, ActorContext actorContext) {
+        super(entityTypeKey, getEntityId(persistenceId));
         this.actorContext = actorContext;
     }
 
-    public static Behavior<Object> behavior(String persistenceId) {
-        return Behaviors.setup(actorContext -> new DeviceSupervisor(persistenceId, actorContext));
+    public static String getEntityId(String persistenceId) {
+        return "DeviceSupervisor*" + persistenceId;
     }
 
     @Override
     public State emptyState() {
-        return null;
+        return new State();
     }
 
     @Override
@@ -46,9 +48,10 @@ public class DeviceSupervisor extends EventSourcedEntity<
         return newCommandHandlerBuilder()
                 .forAnyState()
                 .onCommand(GenesisCommand.class, command -> {
-                    personManager = actorContext.spawn(PersonManager.behavior(command.deviceId), PERSON_MANAGER + command.deviceId);
+                    personManager = actorContext.spawn(PersonManager.behavior(command.deviceId), PersonManager.getEntityId(command.deviceId));
                     activityManager = actorContext.spawn(ActivityManager.behavior(command.deviceId), ACTIVITY_MANAGER + command.deviceId);
-                    return Effect().none();
+
+                    return Effect().persist(new StartedEvent());
                 })
                 .onAnyCommand((state, command) -> {
                     if (command instanceof PersonManager.Command) {
@@ -56,7 +59,7 @@ public class DeviceSupervisor extends EventSourcedEntity<
                     } else if (command instanceof ActivityCommands.Command) {
                         activityManager.tell(command);
                     }
-                    
+
                     return Effect().none();
                 });
     }
@@ -64,13 +67,22 @@ public class DeviceSupervisor extends EventSourcedEntity<
     @Override
     public EventHandler<State, Event> eventHandler() {
         return newEventHandlerBuilder()
-                .forAnyState().build();
+                .forAnyState()
+                .onEvent(StartedEvent.class, (state, event) -> {
+//                    personManager.tell(new PersonManager.Event());
+                    return state;
+                })
+                .build();
     }
 
     public interface Command {
     }
 
-    public interface Event {
+    public static class Event {
+    }
+
+    public static class StartedEvent extends Event {
+        String guid = UUID.randomUUID().toString();
     }
 
     public static class GenesisCommand implements Command {

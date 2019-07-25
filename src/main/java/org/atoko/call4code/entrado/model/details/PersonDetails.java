@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 
-import java.util.Collections;
-
 @Data
 public class PersonDetails {
 
@@ -23,7 +21,7 @@ public class PersonDetails {
     }
 
     public PersonDetails(PersonActor.State actor) {
-        this.deviceId = actor.deviceId.id();
+        this.deviceId = actor.sourceId.id();
         this.personId = actor.personId.id();
         this.firstName = actor.firstName;
         this.lastName = actor.lastName;

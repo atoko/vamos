@@ -15,8 +15,8 @@ import java.util.function.BiFunction;
 public class ActivityActor extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityActor.State
         > {
-    public static String ACTIVITY_PREFIX = "activity;";
-    public static EntityTypeKey<ActivityCommands.Command> entityTypeKey = EntityTypeKey.create(ActivityCommands.Command.class, "PersonActor;");
+    public static String ACTIVITY_PREFIX = "activity*";
+    public static EntityTypeKey<ActivityCommands.Command> entityTypeKey = EntityTypeKey.create(ActivityCommands.Command.class, "ActivityActor*+");
 
     public ActivityActor(String activityId) {
         super(entityTypeKey, activityId);

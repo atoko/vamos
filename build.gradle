@@ -63,6 +63,8 @@ dependencies {
 	implementation 'com.typesafe.akka:akka-persistence-typed_2.13:2.6.0-M4'
 	implementation 'com.typesafe.akka:akka-cluster-sharding-typed_2.13:2.6.0-M4'
 	implementation 'com.typesafe.akka:akka-serialization-jackson_2.13:2.6.0-M4'
+	implementation 'org.iq80.leveldb:leveldb:0.9'
+	implementation 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
 	implementation 'org.scala-lang:scala-library:2.13.0'
 
 	implementation 'com.github.oshi:oshi-core:3.13.3'

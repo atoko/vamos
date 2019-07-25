@@ -20,8 +20,8 @@ public class ActivityManager extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityManager.State
         > {
 
-    public static final String ACTIVITY_MANAGER = "ActivityManager_;";
-    public static EntityTypeKey<ActivityCommands.Command> entityTypeKey = EntityTypeKey.create(ActivityCommands.Command.class, "ActivityManager;");
+    public static final String ACTIVITY_MANAGER = "ActivityManager*";
+    public static EntityTypeKey<ActivityCommands.Command> entityTypeKey = EntityTypeKey.create(ActivityCommands.Command.class, "*ActivityManager+");
     private static ActivityDetails[] activityDetails = new ActivityDetails[]{};
     private ActorContext actorContext;
 

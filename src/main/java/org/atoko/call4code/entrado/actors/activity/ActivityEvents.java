@@ -3,12 +3,12 @@ package org.atoko.call4code.entrado.actors.activity;
 import lombok.Data;
 
 public class ActivityEvents {
-    public interface Event {
+    public static class Event {
     }
 
 
     @Data
-    public static class ActivityCreatedEvent implements Event {
+    public static class ActivityCreatedEvent extends Event {
         String deviceId;
         String activityId;
         String name;
@@ -28,7 +28,7 @@ public class ActivityEvents {
 
 
     @Data
-    public static class ActivityJoinedEvent implements Event {
+    public static class ActivityJoinedEvent extends Event {
         String activityId;
         String personId;
 

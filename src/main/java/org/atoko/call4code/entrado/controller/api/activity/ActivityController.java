@@ -25,7 +25,7 @@ public class ActivityController {
             @RequestBody String name
     ) {
         return activityService.create(
-                name
+                 name
         ).map((activity) -> ResponseEntity.ok(Collections.singletonMap("data", activity)));
     }
 

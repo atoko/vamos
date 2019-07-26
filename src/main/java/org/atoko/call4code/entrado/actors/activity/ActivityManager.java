@@ -9,6 +9,7 @@ import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
+import lombok.Data;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 
 import java.util.Collections;
@@ -78,10 +79,14 @@ public class ActivityManager extends EventSourcedEntity<
     public EventHandler<State, ActivityEvents.Event> eventHandler() {
         return newEventHandlerBuilder()
                 .forAnyState()
-                .onEvent(ActivityEvents.ActivityCreatedEvent.class, (state, event) -> {
-                    return state.handle(event);
-                })
                 .onEvent(ActivityEvents.Event.class, (state, event) -> {
+                    if (event instanceof ActivityEvents.ActivityCreatedEvent) {
+                        return state.handle((ActivityEvents.ActivityCreatedEvent)event);
+                    } else if(event instanceof ActivityEvents.ActivityJoinedEvent) {
+                        return state.handle((ActivityEvents.ActivityJoinedEvent) event);
+                    } else if(event instanceof ActivityEvents.ActivityStationCreatedEvent) {
+                        return state.handle((ActivityEvents.ActivityStationCreatedEvent) event);
+                    }
                     return state;
                 })
                 .onAnyEvent((state, e) -> {
@@ -89,6 +94,7 @@ public class ActivityManager extends EventSourcedEntity<
                 });
     }
 
+    @Data
     public class State {
         private Map<String, ActivityDetails> map;
 
@@ -115,6 +121,19 @@ public class ActivityManager extends EventSourcedEntity<
             ).tell(new ActivityCommands.ActivityGenesis(event));
 
             return new ActivityManager.State(this.map);
+        }
+
+        public ActivityManager.State handle(ActivityEvents.ActivityStationCreatedEvent event) {
+            actorContext.getChild(event.command.activityId).ifPresent( action -> {
+                ActorRef child = (ActorRef) action;
+                //child.tell(new Act);
+            });
+            return this;
+        }
+
+        public State handle(ActivityEvents.ActivityJoinedEvent event) {
+
+            return this;
         }
     }
 }

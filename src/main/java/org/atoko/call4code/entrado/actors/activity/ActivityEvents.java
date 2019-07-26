@@ -37,4 +37,12 @@ public class ActivityEvents {
             this.personId = command.personId;
         }
     }
+
+    public static class ActivityStationCreatedEvent extends Event {
+        public ActivityCommands.ActivityStationCreateCommand command;
+
+        public ActivityStationCreatedEvent(ActivityCommands.ActivityStationCreateCommand command) {
+            this.command = command;
+        }
+    }
 }

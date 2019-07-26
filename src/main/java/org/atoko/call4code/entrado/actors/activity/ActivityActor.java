@@ -12,6 +12,8 @@ import org.atoko.call4code.entrado.model.details.ActivityDetails;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class ActivityActor extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityActor.State
@@ -52,6 +54,13 @@ public class ActivityActor extends EventSourcedEntity<
                                 command.replyTo.tell(new ActivityDetails(_state));
                             });
                         })
+                .onCommand(ActivityCommands.ActivityStationCreateCommand.class,
+                        command -> {
+                            this._state = new State(_state, new ActivityEvents.ActivityStationCreatedEvent(command));
+                            return Effect().none().thenRun(() -> {
+                                command.replyTo.tell(new ActivityDetails(_state));
+                            });
+                        })
                 .onCommand(ActivityCommands.ActivityDetailsPoll.class,
                         (state, command) -> Effect().none()
                                 .thenRun(() -> command.replyTo.tell(new ActivityDetails(_state)))
@@ -72,6 +81,7 @@ public class ActivityActor extends EventSourcedEntity<
         public PersistenceId activityId;
         public String name;
         public List<String> personIds;
+        public Map<String, ActivityStationState> stations;
 
         public State() {
         }
@@ -81,6 +91,7 @@ public class ActivityActor extends EventSourcedEntity<
             this.activityId = PersistenceId.apply(event.activityId);
             this.name = event.name;
             this.personIds = new LinkedList<>();
+            this.stations = new WeakHashMap<>();
         }
 
         public State(State state, ActivityEvents.ActivityJoinedEvent event) {
@@ -90,6 +101,15 @@ public class ActivityActor extends EventSourcedEntity<
 
             state.personIds.add(event.personId);
             this.personIds = new LinkedList<>(state.personIds);
+        }
+
+        public State(State state, ActivityEvents.ActivityStationCreatedEvent activityStationCreatedEvent) {
+            this.deviceId = state.deviceId;
+            this.activityId = state.activityId;
+            this.name = state.name;
+
+            state.stations.put(activityStationCreatedEvent.command.id, new ActivityStationState(activityStationCreatedEvent.command));
+            this.stations = state.stations;
         }
 
 

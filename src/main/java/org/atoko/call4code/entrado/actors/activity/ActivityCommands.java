@@ -15,6 +15,11 @@ public class ActivityCommands {
     public abstract static class ActivityTargetedCommand extends Command {
         String activityId;
         ActorRef<ActivityDetails> replyTo;
+
+        public ActivityTargetedCommand(ActorRef<ActivityDetails> replyTo, String activityId) {
+            this.activityId = activityId;
+            this.replyTo = replyTo;
+        }
     }
 
     @Data
@@ -47,8 +52,7 @@ public class ActivityCommands {
         String personId;
 
         public ActivityJoinCommand(ActorRef<ActivityDetails> replyTo, String activityId, String personId) {
-            this.replyTo = replyTo;
-            this.activityId = activityId;
+            super(replyTo, activityId);
             this.personId = personId;
         }
     }
@@ -56,8 +60,7 @@ public class ActivityCommands {
     @Data
     public static class ActivityDetailsPoll extends ActivityTargetedCommand {
         public ActivityDetailsPoll(ActorRef<ActivityDetails> replyTo, String activityId) {
-            this.replyTo = replyTo;
-            this.activityId = activityId;
+            super(replyTo, activityId);
         }
     }
 
@@ -76,4 +79,14 @@ public class ActivityCommands {
     }
 
 
+    public static class ActivityStationCreateCommand extends ActivityTargetedCommand{
+        public String id;
+        public String name;
+
+        public ActivityStationCreateCommand(ActorRef replyTo, String activityId, String id, String name) {
+           super(replyTo, activityId);
+            this.id = id;
+            this.name = name;
+        }
+    }
 }

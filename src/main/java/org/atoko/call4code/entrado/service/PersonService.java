@@ -31,24 +31,11 @@ public class PersonService {
     @Autowired
     private ActorSystemService actorSystemService;
 
-    private EntityRef<PersonManager.Command> getEntityRef() {
-        return actorSystemService.child(
-                PersonManager.entityTypeKey,
-                PersonManager.getEntityId(deviceService.getDeviceId())
-        );
-    }
-
-    private EntityRef<PersonManager.Command> getEntityRef(String personId) {
-        return actorSystemService.child(
-                PersonActor.entityTypeKey,
-                personId
-        );
-    }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
         String personId = UUID.randomUUID().toString().substring(0, 8);
 
-        CompletionStage<Boolean> create = actorSystemService.get().ask(
+        CompletionStage<Boolean> create = getShard().ask(
                 (replyTo) ->
                         new PersonManager.PersonCreateCommand(
                                 (ActorRef) replyTo,
@@ -72,6 +59,13 @@ public class PersonService {
         });
     }
 
+    private EntityRef getShard() {
+        return actorSystemService.child(PersonManager.entityTypeKey, PersonManager.getEntityId(deviceService.getDeviceId()));
+    }
+
+    private EntityRef getPersonShard(String personId) {
+        return actorSystemService.child(PersonActor.entityTypeKey, PersonActor.getEntityId(deviceService.getDeviceId(), personId));
+    }
 
     public Mono<List<PersonDetails>> get(String id) {
         if (!StringUtils.isEmpty(id)) {
@@ -82,11 +76,11 @@ public class PersonService {
     }
 
     public Mono<PersonDetails> getById(String id) {
-        return toMono(actorSystemService.get().ask((replyTo) ->
-                new PersonActor.PersonDetailsPoll((ActorRef) replyTo, id), duration));
+        return toMono(getShard().ask((replyTo) ->
+                new PersonActor.PersonDetailsPoll((ActorRef) replyTo, PersonActor.getEntityId(deviceService.getDeviceId(), id)), duration));
     }
 
     private Mono<PersonDetails[]> getAll() {
-        return toMono(getEntityRef().ask(PersonManager.PersonQueryPoll::new, duration));
+        return toMono(getShard().ask((replyTo) -> new PersonManager.PersonQueryPoll((ActorRef) replyTo), duration));
     }
 }

@@ -3,6 +3,7 @@ package org.atoko.call4code.entrado.actors.person;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;
+import akka.cluster.sharding.typed.javadsl.EntityRef;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.PersistenceId;
@@ -18,12 +19,17 @@ public class PersonActor extends EventSourcedEntity<
         return PERSON_PREFIX + personId + "&" + sourceId;
     }
     public static EntityTypeKey<PersonManager.Command> entityTypeKey = EntityTypeKey.create(PersonManager.Command.class, "PersonActor*+");
+    private State _state = emptyState();
+
+    public PersonActor(PersonCreatedEvent event) {
+        super(entityTypeKey, getEntityId(event.deviceId, event.personId));
+    }
 
     public PersonActor(String sourceId, String personId) {
         super(entityTypeKey, getEntityId(sourceId, personId));
     }
-    public static Behavior<PersonManager.Command> behavior(String sourceId, String personId) {
-        return Behaviors.setup(actorContext -> new PersonActor(sourceId, personId));
+    public static Behavior<PersonManager.Command> behavior(PersonCreatedEvent event) {
+        return Behaviors.setup(actorContext -> new PersonActor(event));
     }
 
     public boolean shouldSnapshot(State state, PersonManager.Event event, long sequenceNr) {
@@ -39,12 +45,13 @@ public class PersonActor extends EventSourcedEntity<
     public CommandHandler<PersonManager.Command, PersonManager.Event, PersonActor.State> commandHandler() {
         return newCommandHandlerBuilder()
                 .forAnyState()
-                .onCommand(PersonManager.PersonCreateCommand.class,
-                        command -> Effect().persist(new PersonActor.PersonCreatedEvent(command))
-                )
-                .onCommand(PersonActor.PersonDetailsPoll.class,
-                        (state, command) -> Effect().none().thenRun(() -> command.replyTo.tell(new PersonDetails(
-                                state
+                .onCommand(PersonActor.PersonGenesis.class, (state, command) -> {
+                    this._state = new State(command.event);
+                    return Effect().none();
+                })
+                .onCommand(PersonActor.PersonDetailsPoll.class, (state, command) ->
+                        Effect().none().thenRun(() -> command.replyTo.tell(new PersonDetails(
+                                this._state
                         ))))
                 .build();
     }
@@ -83,11 +90,19 @@ public class PersonActor extends EventSourcedEntity<
 
     public static class PersonDetailsPoll extends PersonManager.Command {
         ActorRef<PersonDetails> replyTo;
-        String id;
+        String personId;
 
-        public <U> PersonDetailsPoll(ActorRef<PersonDetails> replyTo, String id) {
+        public <U> PersonDetailsPoll(ActorRef<PersonDetails> replyTo, String personId) {
             this.replyTo = replyTo;
-            this.id = id;
+            this.personId = personId;
+        }
+    }
+
+    public static class PersonGenesis extends PersonManager.Command {
+        PersonCreatedEvent event;
+
+        public PersonGenesis(PersonCreatedEvent event) {
+            this.event = event;
         }
     }
 

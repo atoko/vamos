@@ -14,6 +14,7 @@ import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static org.atoko.call4code.entrado.actors.activity.ActivityManager.ACTIVITY_MANAGER;
@@ -30,7 +31,7 @@ public class DeviceSupervisor extends EventSourcedEntity<
     private ActorContext actorContext;
 
     public DeviceSupervisor(String persistenceId, ActorContext actorContext) {
-        super(entityTypeKey, getEntityId(persistenceId));
+        super(entityTypeKey, persistenceId);
         this.actorContext = actorContext;
     }
 
@@ -48,15 +49,11 @@ public class DeviceSupervisor extends EventSourcedEntity<
         return newCommandHandlerBuilder()
                 .forAnyState()
                 .onCommand(GenesisCommand.class, command -> {
-                    personManager = actorContext.spawn(PersonManager.behavior(command.deviceId), PersonManager.getEntityId(command.deviceId));
                     activityManager = actorContext.spawn(ActivityManager.behavior(command.deviceId), ACTIVITY_MANAGER + command.deviceId);
-
                     return Effect().persist(new StartedEvent());
                 })
                 .onAnyCommand((state, command) -> {
-                    if (command instanceof PersonManager.Command) {
-                        personManager.tell(command);
-                    } else if (command instanceof ActivityCommands.Command) {
+                    if (command instanceof ActivityCommands.Command) {
                         activityManager.tell(command);
                     }
 
@@ -68,10 +65,7 @@ public class DeviceSupervisor extends EventSourcedEntity<
     public EventHandler<State, Event> eventHandler() {
         return newEventHandlerBuilder()
                 .forAnyState()
-                .onEvent(StartedEvent.class, (state, event) -> {
-//                    personManager.tell(new PersonManager.Event());
-                    return state;
-                })
+                .onEvent(StartedEvent.class, (state, event) -> { return state; })
                 .build();
     }
 
@@ -83,6 +77,7 @@ public class DeviceSupervisor extends EventSourcedEntity<
 
     public static class StartedEvent extends Event {
         String guid = UUID.randomUUID().toString();
+        String timestamp = String.valueOf(new Date().getTime());
     }
 
     public static class GenesisCommand implements Command {

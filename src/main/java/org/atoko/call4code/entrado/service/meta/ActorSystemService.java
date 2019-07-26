@@ -1,14 +1,13 @@
 package org.atoko.call4code.entrado.service.meta;
 
 import akka.actor.typed.ActorSystem;
-import akka.cluster.sharding.typed.javadsl.ClusterSharding;
-import akka.cluster.sharding.typed.javadsl.Entity;
-import akka.cluster.sharding.typed.javadsl.EntityRef;
-import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
+import akka.cluster.sharding.typed.javadsl.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
 import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.atoko.call4code.entrado.actors.meta.GenesisBehavior;
+import org.atoko.call4code.entrado.actors.person.PersonManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -31,6 +30,13 @@ public class ActorSystemService {
                 Entity.ofEventSourcedEntity(
                         DeviceSupervisor.entityTypeKey,
                         (context) -> new DeviceSupervisor(context.getEntityId(), context.getActorContext())
+                )
+        );
+
+        clusterSharding.init(
+                Entity.ofEventSourcedEntity(
+                        PersonManager.entityTypeKey,
+                        (context) -> new PersonManager(context.getEntityId(), context.getActorContext())
                 )
         );
 

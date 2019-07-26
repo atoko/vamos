@@ -4,19 +4,20 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
+import akka.cluster.sharding.typed.javadsl.EntityContext;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
 import lombok.Data;
-import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
+import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
+import org.atoko.call4code.entrado.actors.activity.ActivityManager;
+import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
+import org.atoko.call4code.entrado.service.meta.DeviceService;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
-
-import static org.atoko.call4code.entrado.actors.person.PersonActor.PERSON_PREFIX;
 
 public class PersonManager extends EventSourcedEntity<
         PersonManager.Command, PersonManager.Event, PersonManager.State
@@ -26,17 +27,13 @@ public class PersonManager extends EventSourcedEntity<
     public static EntityTypeKey<PersonManager.Command> entityTypeKey = EntityTypeKey.create(PersonManager.Command.class, "*PersonManager+");
     private static PersonDetails[] personDetails = new PersonDetails[]{};
     private ActorContext actorContext;
-    //Refactor to state
-    private String deviceId;
 
-    public PersonManager(String deviceId, ActorContext actorContext) {
-        super(entityTypeKey, getEntityId(deviceId));
+    public PersonManager(String persistenceId, ActorContext actorContext) {
+        super(entityTypeKey, persistenceId);
         this.actorContext = actorContext;
-        this.deviceId = deviceId;
     }
-
-    public static Behavior<Command> behavior(String deviceId) {
-        return Behaviors.setup(actorContext -> new PersonManager(deviceId, actorContext));
+    public static Behavior<PersonManager.Command> behavior(EntityContext<PersonManager.Command> context) {
+        return Behaviors.setup(actorContext -> new PersonManager(context.getEntityId(), context.getActorContext()));
     }
 
     public static String getEntityId(String deviceId) {
@@ -54,25 +51,18 @@ public class PersonManager extends EventSourcedEntity<
                 .forAnyState()
                 .onCommand(PersonCreateCommand.class,
                         (state, command) -> {
-                            ActorRef child = actorContext.spawn(
-                                    PersonActor.behavior(command.deviceId, command.personId),
-                                    PersonActor.getEntityId(command.deviceId, command.personId)
-                            );
-                            child.tell(command);
-
                             return Effect().persist(
                                     new PersonActor.PersonCreatedEvent(command)
                             ).thenRun(() -> command.replyTo.tell(true));
                         })
                 .onCommand(PersonActor.PersonDetailsPoll.class,
                         (state, command) -> {
-                            actorContext.getChild(PersonActor.getEntityId(deviceId, command.id))
-                                    .ifPresentOrElse((action) -> {
-                                            ActorRef child = (ActorRef) action;
-                                            child.tell(command);
-                                        },
-                                        () -> command.replyTo.tell(new PersonDetails.PersonNullDetails())
-                                    );
+                            actorContext.getChild(command.personId).ifPresentOrElse((action) -> {
+                                ActorRef child = (ActorRef) action;
+                                child.tell(command);
+                            }, () -> {
+                                command.replyTo.tell(new PersonDetails.PersonNullDetails());
+                            });
                             return Effect().none();
                         })
                 .onCommand(PersonQueryPoll.class,
@@ -153,6 +143,7 @@ public class PersonManager extends EventSourcedEntity<
             }
         }
 
+
         public State handle(PersonActor.PersonCreatedEvent event) {
             map.put(event.personId, new PersonDetails(
                     event.deviceId,
@@ -161,6 +152,11 @@ public class PersonManager extends EventSourcedEntity<
                     event.lastName,
                     event.pin
             ));
+
+            actorContext.spawn(
+                    PersonActor.behavior(event),
+                    PersonActor.getEntityId(event.deviceId, event.personId)
+            ).tell(new PersonActor.PersonGenesis(event));
 
             return new State(this.map);
         }

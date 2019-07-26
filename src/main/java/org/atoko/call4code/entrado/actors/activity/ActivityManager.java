@@ -27,8 +27,8 @@ public class ActivityManager extends EventSourcedEntity<
 
     private Map<String, ActivityDetails> map = new HashMap<>();
 
-    public ActivityManager(String deviceId, ActorContext actorContext) {
-        super(entityTypeKey, getEntityId(deviceId));
+    public ActivityManager(String persistenceId, ActorContext actorContext) {
+        super(entityTypeKey, persistenceId);
         this.actorContext = actorContext;
     }
 

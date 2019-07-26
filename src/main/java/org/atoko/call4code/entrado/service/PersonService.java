@@ -3,6 +3,7 @@ package org.atoko.call4code.entrado.service;
 import akka.actor.typed.ActorRef;
 import akka.cluster.sharding.typed.javadsl.EntityRef;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
+import org.atoko.call4code.entrado.actors.person.PersonCommands;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.atoko.call4code.entrado.service.meta.ActorSystemService;
@@ -31,13 +32,17 @@ public class PersonService {
     @Autowired
     private ActorSystemService actorSystemService;
 
+    private EntityRef getShard() {
+        String deviceId = deviceService.getDeviceId();
+        return actorSystemService.child(PersonManager.entityTypeKey(deviceId), PersonManager.getEntityId(deviceId));
+    }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {
         String personId = UUID.randomUUID().toString().substring(0, 8);
 
         CompletionStage<Boolean> create = getShard().ask(
                 (replyTo) ->
-                        new PersonManager.PersonCreateCommand(
+                        new PersonCommands.PersonCreateCommand(
                                 (ActorRef) replyTo,
                                 deviceService.getDeviceId(),
                                 personId,
@@ -59,13 +64,6 @@ public class PersonService {
         });
     }
 
-    private EntityRef getShard() {
-        return actorSystemService.child(PersonManager.entityTypeKey, PersonManager.getEntityId(deviceService.getDeviceId()));
-    }
-
-    private EntityRef getPersonShard(String personId) {
-        return actorSystemService.child(PersonActor.entityTypeKey, PersonActor.getEntityId(deviceService.getDeviceId(), personId));
-    }
 
     public Mono<List<PersonDetails>> get(String id) {
         if (!StringUtils.isEmpty(id)) {
@@ -77,10 +75,10 @@ public class PersonService {
 
     public Mono<PersonDetails> getById(String id) {
         return toMono(getShard().ask((replyTo) ->
-                new PersonActor.PersonDetailsPoll((ActorRef) replyTo, PersonActor.getEntityId(deviceService.getDeviceId(), id)), duration));
+                new PersonCommands.PersonDetailsPoll((ActorRef) replyTo, PersonActor.getEntityId(deviceService.getDeviceId(), id)), duration));
     }
 
     private Mono<PersonDetails[]> getAll() {
-        return toMono(getShard().ask((replyTo) -> new PersonManager.PersonQueryPoll((ActorRef) replyTo), duration));
+        return toMono(getShard().ask((replyTo) -> new PersonCommands.PersonQueryPoll((ActorRef) replyTo), duration));
     }
 }

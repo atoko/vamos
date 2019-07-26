@@ -9,31 +9,29 @@ import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
-import lombok.Data;
-import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
-import org.atoko.call4code.entrado.actors.activity.ActivityManager;
-import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
-import org.atoko.call4code.entrado.service.meta.DeviceService;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PersonManager extends EventSourcedEntity<
-        PersonManager.Command, PersonManager.Event, PersonManager.State
+        PersonCommands.Command, PersonEvents.Event, PersonManager.State
         > {
 
     public static final String PERSON_MANAGER = "PersonManager*";
-    public static EntityTypeKey<PersonManager.Command> entityTypeKey = EntityTypeKey.create(PersonManager.Command.class, "*PersonManager+");
     private static PersonDetails[] personDetails = new PersonDetails[]{};
     private ActorContext actorContext;
-
-    public PersonManager(String persistenceId, ActorContext actorContext) {
-        super(entityTypeKey, persistenceId);
+    public PersonManager(String sourceId, String persistenceId, ActorContext actorContext) {
+        super(entityTypeKey(sourceId), persistenceId);
         this.actorContext = actorContext;
     }
-    public static Behavior<PersonManager.Command> behavior(EntityContext<PersonManager.Command> context) {
-        return Behaviors.setup(actorContext -> new PersonManager(context.getEntityId(), context.getActorContext()));
+
+    public static EntityTypeKey<PersonCommands.Command> entityTypeKey(String sourceId) {
+        return EntityTypeKey.create(PersonCommands.Command.class, "*PersonManager(" + sourceId + ")+");
+    }
+
+    public static Behavior<PersonCommands.Command> behavior(String sourceId, EntityContext<PersonCommands.Command> context) {
+        return Behaviors.setup(actorContext -> new PersonManager(sourceId, context.getEntityId(), context.getActorContext()));
     }
 
     public static String getEntityId(String deviceId) {
@@ -46,16 +44,16 @@ public class PersonManager extends EventSourcedEntity<
     }
 
     @Override
-    public CommandHandler<Command, Event, State> commandHandler() {
+    public CommandHandler<PersonCommands.Command, PersonEvents.Event, State> commandHandler() {
         return newCommandHandlerBuilder()
                 .forAnyState()
-                .onCommand(PersonCreateCommand.class,
+                .onCommand(PersonCommands.PersonCreateCommand.class,
                         (state, command) -> {
                             return Effect().persist(
-                                    new PersonActor.PersonCreatedEvent(command)
+                                    new PersonEvents.PersonCreatedEvent(command)
                             ).thenRun(() -> command.replyTo.tell(true));
                         })
-                .onCommand(PersonActor.PersonDetailsPoll.class,
+                .onCommand(PersonCommands.PersonDetailsPoll.class,
                         (state, command) -> {
                             actorContext.getChild(command.personId).ifPresentOrElse((action) -> {
                                 ActorRef child = (ActorRef) action;
@@ -65,7 +63,7 @@ public class PersonManager extends EventSourcedEntity<
                             });
                             return Effect().none();
                         })
-                .onCommand(PersonQueryPoll.class,
+                .onCommand(PersonCommands.PersonQueryPoll.class,
                         (state, poll) -> {
                             return Effect().none().thenRun(() -> {
                                 poll.replyTo.tell(
@@ -77,14 +75,13 @@ public class PersonManager extends EventSourcedEntity<
     }
 
     @Override
-    public EventHandler<State, Event> eventHandler() {
-        //Handle person created event
+    public EventHandler<State, PersonEvents.Event> eventHandler() {
         return newEventHandlerBuilder()
                 .forAnyState()
-                .onEvent(PersonActor.PersonCreatedEvent.class, (state, event) -> {
+                .onEvent(PersonEvents.PersonCreatedEvent.class, (state, event) -> {
                     return state.handle(event);
                 })
-                .onEvent(PersonManager.Event.class, (state, event) -> {
+                .onEvent(PersonEvents.Event.class, (state, event) -> {
                     return state;
                 })
                 .onAnyEvent((state, e) -> {
@@ -92,59 +89,19 @@ public class PersonManager extends EventSourcedEntity<
                 });
     }
 
-    public static class Command {
-    }
-
-    public static class Event {
-    }
-
-    @Data
-    public static class PersonCreateCommand extends Command {
-        public ActorRef replyTo;
-        String deviceId;
-        String personId;
-        String firstName;
-        String lastName;
-        String pin;
-
-        public PersonCreateCommand(
-                ActorRef replyTo,
-                String deviceId,
-                String personId,
-                String firstName,
-                String lastName,
-                String pin
-        ) {
-            this.replyTo = replyTo;
-            this.deviceId = deviceId;
-            this.personId = personId;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.pin = pin;
-        }
-    }
-
-    public static class PersonQueryPoll extends PersonManager.Command {
-        ActorRef<PersonDetails[]> replyTo;
-
-        public PersonQueryPoll(ActorRef<PersonDetails[]> replyTo) {
-            this.replyTo = replyTo;
-        }
-    }
-
     public class State {
         private Map<String, PersonDetails> map;
 
         public State(Map<String, PersonDetails> map) {
             if (map == null) {
-                this.map = new HashMap<>();
+                this.map = new WeakHashMap<>();
             } else {
-                this.map = new HashMap<>(map);
+                this.map = new WeakHashMap<>(map);
             }
         }
 
 
-        public State handle(PersonActor.PersonCreatedEvent event) {
+        public State handle(PersonEvents.PersonCreatedEvent event) {
             map.put(event.personId, new PersonDetails(
                     event.deviceId,
                     event.personId,
@@ -156,7 +113,7 @@ public class PersonManager extends EventSourcedEntity<
             actorContext.spawn(
                     PersonActor.behavior(event),
                     PersonActor.getEntityId(event.deviceId, event.personId)
-            ).tell(new PersonActor.PersonGenesis(event));
+            ).tell(new PersonCommands.PersonGenesis(event));
 
             return new State(this.map);
         }

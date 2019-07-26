@@ -13,12 +13,6 @@ public class ActivityDetails {
     public String name = "";
     public List<String> personIds = Collections.EMPTY_LIST;
 
-    public static class ActivityNullDetails extends ActivityDetails {
-        public ActivityNullDetails() {
-            super("", "", "", Collections.emptyList());
-        }
-    }
-
     public ActivityDetails(ActivityActor.State actor) {
         this.deviceId = actor.deviceId.id();
         this.activityId = actor.activityId.id();
@@ -43,5 +37,11 @@ public class ActivityDetails {
 
     public String getUniqueId() {
         return String.format("%s;%s", deviceId, activityId);
+    }
+
+    public static class ActivityNullDetails extends ActivityDetails {
+        public ActivityNullDetails() {
+            super("", "", "", Collections.emptyList());
+        }
     }
 }

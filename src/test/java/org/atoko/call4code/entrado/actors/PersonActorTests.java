@@ -3,6 +3,7 @@ package org.atoko.call4code.entrado.actors;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
+import org.atoko.call4code.entrado.actors.person.PersonCommands;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ public class PersonActorTests extends ActorTest {
                         PersonActor.props(fname, lname, pin, id),
                         "greeter"
                 );
-        Future<Object> future = Patterns.ask(greeter, new PersonActor.PersonDetailsPoll(), 3L);
+        Future<Object> future = Patterns.ask(greeter, new PersonCommands.PersonDetailsPoll(), 3L);
         PersonDetails result = (PersonDetails)Await.result(future, Duration.create(3, TimeUnit.SECONDS));
 
         Assertions.assertEquals(fname, result.firstName);

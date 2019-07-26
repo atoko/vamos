@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem;
 import akka.cluster.sharding.typed.javadsl.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
+import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
 import org.atoko.call4code.entrado.actors.meta.GenesisBehavior;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.function.Function;
 
 @Component
 public class ActorSystemService {
@@ -25,29 +27,38 @@ public class ActorSystemService {
         this.actorSystem = ActorSystem.create(GenesisBehavior.main, "root-system", completeConfig);
         this.clusterSharding = ClusterSharding.get(actorSystem);
         this.deviceService = deviceService;
+    }
 
-        clusterSharding.init(
-                Entity.ofEventSourcedEntity(
-                        DeviceSupervisor.entityTypeKey,
-                        (context) -> new DeviceSupervisor(context.getEntityId(), context.getActorContext())
-                )
-        );
-
-        clusterSharding.init(
-                Entity.ofEventSourcedEntity(
-                        PersonManager.entityTypeKey,
-                        (context) -> new PersonManager(context.getEntityId(), context.getActorContext())
-                )
-        );
-
-        get().tell(
-                new DeviceSupervisor.GenesisCommand(deviceService.getDeviceId())
+    private Map<EntityTypeKey, Function<EntityContext, Object>> shardManagers(String deviceId) {
+        return Map.of(//DeviceSupervisor
+                DeviceSupervisor.entityTypeKey(deviceId),
+                (context) -> new DeviceSupervisor(deviceId, context.getEntityId(), context.getActorContext()),
+                //PersonManager
+                PersonManager.entityTypeKey(deviceId),
+                (context) -> new PersonManager(deviceId, context.getEntityId(), context.getActorContext()),
+                //ActivityManager
+                ActivityManager.entityTypeKey(deviceId),
+                (context) -> new ActivityManager(deviceId, context.getEntityId(), context.getActorContext())
         );
     }
 
     @PostConstruct
     private void initializeShards() {
+        String deviceId = deviceService.getDeviceId();
+        shardManagers(deviceId).forEach((typeKey, constructor) -> {
 
+            clusterSharding.init(
+                    Entity.ofEventSourcedEntity(
+                            typeKey,
+                            (context) -> (EventSourcedEntity<Object, Object, Object>) constructor.apply(context)
+                    )
+            );
+        });
+
+
+        get().tell(
+                new DeviceSupervisor.GenesisCommand(deviceId)
+        );
     }
 
     @Bean
@@ -60,7 +71,8 @@ public class ActorSystemService {
     }
 
     public EntityRef get() {
-        return child(DeviceSupervisor.entityTypeKey, DeviceSupervisor.getEntityId(deviceService.getDeviceId()));
+        String deviceId = deviceService.getDeviceId();
+        return child(DeviceSupervisor.entityTypeKey(deviceId), DeviceSupervisor.getEntityId(deviceId));
     }
 
     public EntityRef child(EntityTypeKey entityTypeKey, String identifier) {

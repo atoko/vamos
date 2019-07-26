@@ -1,7 +1,6 @@
 package org.atoko.call4code.entrado.controller.api.person;
 
 import org.atoko.call4code.entrado.exception.ResponseCodeException;
-import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 import org.atoko.call4code.entrado.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;

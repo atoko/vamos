@@ -11,10 +11,21 @@ public class ActivityCommands {
     public static class Command {
     }
 
+    @Data
     public abstract static class ActivityTargetedCommand extends Command {
         String activityId;
         ActorRef<ActivityDetails> replyTo;
     }
+
+    @Data
+    public static class ActivityGenesis extends Command {
+        ActivityEvents.ActivityCreatedEvent event;
+
+        public ActivityGenesis(ActivityEvents.ActivityCreatedEvent event) {
+            this.event = event;
+        }
+    }
+
 
     @Data
     public static class ActivityCreateCommand extends Command {

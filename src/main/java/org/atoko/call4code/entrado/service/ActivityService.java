@@ -1,9 +1,11 @@
 package org.atoko.call4code.entrado.service;
 
 import akka.actor.typed.ActorRef;
+import akka.cluster.sharding.typed.javadsl.EntityRef;
 import org.atoko.call4code.entrado.actors.activity.ActivityActor;
 import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
 import org.atoko.call4code.entrado.actors.activity.ActivityManager;
+import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.atoko.call4code.entrado.service.meta.ActorSystemService;
 import org.atoko.call4code.entrado.service.meta.DeviceService;
@@ -30,9 +32,14 @@ public class ActivityService {
     @Autowired
     private ActorSystemService actorSystemService;
 
+    private EntityRef getShard() {
+        String deviceId = deviceService.getDeviceId();
+        return actorSystemService.child(ActivityManager.entityTypeKey(deviceId), ActivityManager.getEntityId(deviceId));
+    }
+
     public Mono<ActivityDetails> create(String name) {
         String id = UUID.randomUUID().toString().substring(0, 8);
-        CompletionStage<Boolean> create = actorSystemService.get().ask((replyTo) ->
+        CompletionStage<Boolean> create = getShard().ask((replyTo) ->
                         new ActivityCommands.ActivityCreateCommand(
                                 (ActorRef) replyTo,
                                 deviceService.getDeviceId(),
@@ -53,8 +60,12 @@ public class ActivityService {
     }
 
     public Mono<ActivityDetails> join(String activityId, String personId) {
-        return toMono(actorSystemService.get().ask((replyTo) ->
-                new ActivityCommands.ActivityJoinCommand((ActorRef) replyTo, activityId, personId), duration));
+        return toMono(getShard().ask((replyTo) ->
+                new ActivityCommands.ActivityJoinCommand(
+                        (ActorRef) replyTo,
+                        ActivityActor.getEntityId(deviceService.getDeviceId(), activityId),
+                        PersonActor.getEntityId(deviceService.getDeviceId(), personId)
+                ), duration));
     }
 
     public Mono<List<ActivityDetails>> get(String id) {
@@ -66,12 +77,17 @@ public class ActivityService {
     }
 
     public Mono<ActivityDetails> getById(String id) {
-        return toMono(actorSystemService.get().ask((replyTo) ->
-                new ActivityCommands.ActivityDetailsPoll((ActorRef) replyTo, id), duration));
+        return toMono(getShard().ask((replyTo) ->
+                new ActivityCommands.ActivityDetailsPoll(
+                        (ActorRef) replyTo,
+                        ActivityActor.getEntityId(deviceService.getDeviceId(), id)
+                ), duration));
     }
 
     private Mono<ActivityDetails[]> getAll() {
-        return toMono(actorSystemService.get().ask((replyTo) ->
-                new ActivityCommands.ActivityQueryPoll((ActorRef) replyTo), duration));
+        return toMono(getShard().ask((replyTo) ->
+                new ActivityCommands.ActivityQueryPoll(
+                        (ActorRef) replyTo
+                ), duration));
     }
 }

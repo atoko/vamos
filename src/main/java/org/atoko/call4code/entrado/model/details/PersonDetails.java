@@ -14,12 +14,6 @@ public class PersonDetails {
     @JsonIgnore
     public String pin = "";
 
-    public static class PersonNullDetails extends PersonDetails {
-        public PersonNullDetails() {
-            super("", "", "", "", "");
-        }
-    }
-
     public PersonDetails(PersonActor.State actor) {
         this.deviceId = actor.sourceId.id();
         this.personId = actor.personId.id();
@@ -35,7 +29,6 @@ public class PersonDetails {
         this.lastName = lastName;
         this.pin = pin;
     }
-
 
     public String getDeviceId() {
         return deviceId;
@@ -59,6 +52,12 @@ public class PersonDetails {
 
     public String getUniqueId() {
         return String.format("%s;%s", deviceId, personId);
+    }
+
+    public static class PersonNullDetails extends PersonDetails {
+        public PersonNullDetails() {
+            super("", "", "", "", "");
+        }
     }
 
 }

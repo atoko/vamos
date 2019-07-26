@@ -4,12 +4,13 @@
         <div class="usa-navbar">
 
             <p th:if="${__activity_current}" th:object="${__activity_current}">
-                <span th:text="*{getUniqueId()}"/>
+                <span th:text="*{getName()}"/>
             </p>
 
 
             <p th:if="${__authentication_current}" th:object="${__authentication_current}">
-                <span th:text="*{getUniqueId()}"/>
+                <span th:text="*{getFirstName()}"/>
+                <span th:text="*{getLastName()}"/>
             </p>
 
             <div class="usa-logo" personId="basic-logo">

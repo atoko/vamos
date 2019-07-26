@@ -1,5 +1,7 @@
 package org.atoko.call4code.entrado.actors.activity;
 
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.cluster.sharding.typed.javadsl.EventSourcedEntity;
 import akka.persistence.typed.PersistenceId;
@@ -8,18 +10,25 @@ import akka.persistence.typed.javadsl.EventHandler;
 import lombok.Data;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class ActivityActor extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityActor.State
         > {
     public static String ACTIVITY_PREFIX = "activity*";
     public static EntityTypeKey<ActivityCommands.Command> entityTypeKey = EntityTypeKey.create(ActivityCommands.Command.class, "ActivityActor*+");
+    private State _state = emptyState();
+    public ActivityActor(ActivityEvents.ActivityCreatedEvent event) {
+        super(entityTypeKey, getEntityId(event.deviceId, event.activityId));
+    }
 
-    public ActivityActor(String activityId) {
-        super(entityTypeKey, activityId);
+    public static String getEntityId(String sourceId, String personId) {
+        return ACTIVITY_PREFIX + personId + "&" + sourceId;
+    }
+
+    public static Behavior<ActivityCommands.Command> behavior(ActivityEvents.ActivityCreatedEvent event) {
+        return Behaviors.setup(actorContext -> new ActivityActor(event));
     }
 
     @Override
@@ -31,17 +40,29 @@ public class ActivityActor extends EventSourcedEntity<
     public CommandHandler<ActivityCommands.Command, ActivityEvents.Event, State> commandHandler() {
         return newCommandHandlerBuilder()
                 .forAnyState()
-                .onCommand(ActivityCommands.ActivityCreateCommand.class,
-                        command -> Effect().persist(new ActivityEvents.ActivityCreatedEvent(command))
-                )
+                .onCommand(ActivityCommands.ActivityGenesis.class,
+                        command -> {
+                            this._state = new State(command.event);
+                            return Effect().none();
+                        })
                 .onCommand(ActivityCommands.ActivityJoinCommand.class,
-                        (state, command) -> Effect().persist(new ActivityEvents.ActivityJoinedEvent(command))
-                                .thenRun(() -> command.replyTo.tell(new ActivityDetails(state)))
-                )
+                        command -> {
+                            this._state = new State(_state, new ActivityEvents.ActivityJoinedEvent(command));
+                            return Effect().none().thenRun(() -> {
+                                command.replyTo.tell(new ActivityDetails(_state));
+                            });
+                        })
                 .onCommand(ActivityCommands.ActivityDetailsPoll.class,
                         (state, command) -> Effect().none()
-                                .thenRun(() -> command.replyTo.tell(new ActivityDetails(state)))
+                                .thenRun(() -> command.replyTo.tell(new ActivityDetails(_state)))
                 )
+                .build();
+    }
+
+    @Override
+    public EventHandler<State, ActivityEvents.Event> eventHandler() {
+        return newEventHandlerBuilder()
+                .forAnyState()
                 .build();
     }
 
@@ -59,7 +80,7 @@ public class ActivityActor extends EventSourcedEntity<
             this.deviceId = PersistenceId.apply(event.deviceId);
             this.activityId = PersistenceId.apply(event.activityId);
             this.name = event.name;
-            this.personIds = new ArrayList<>();
+            this.personIds = new LinkedList<>();
         }
 
         public State(State state, ActivityEvents.ActivityJoinedEvent event) {
@@ -68,24 +89,12 @@ public class ActivityActor extends EventSourcedEntity<
             this.name = state.name;
 
             state.personIds.add(event.personId);
-            this.personIds = new ArrayList<>(state.personIds);
+            this.personIds = new LinkedList<>(state.personIds);
         }
 
 
         public static State inception(ActivityEvents.ActivityCreatedEvent event) {
             return new State(event);
         }
-    }
-
-
-    @Override
-    public EventHandler<State, ActivityEvents.Event> eventHandler() {
-        return newEventHandlerBuilder()
-                .forAnyState()
-                .onEvent(ActivityEvents.ActivityCreatedEvent.class,
-                        (state, event) -> State.inception(event))
-                .onEvent(ActivityEvents.ActivityJoinedEvent.class,
-                        (BiFunction<State, ActivityEvents.ActivityJoinedEvent, State>) State::new)
-                .build();
     }
 }

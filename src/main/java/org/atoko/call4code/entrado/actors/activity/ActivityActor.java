@@ -99,19 +99,19 @@ public class ActivityActor extends EventSourcedEntity<
             this.activityId = state.activityId;
             this.name = state.name;
 
-            state.personIds.add(event.personId);
+            state.personIds.add(event.command.personId);
             this.personIds = new LinkedList<>(state.personIds);
         }
 
-        public State(State state, ActivityEvents.ActivityStationCreatedEvent activityStationCreatedEvent) {
+        public State(State state, ActivityEvents.ActivityStationEvent activityStationEvent) {
             this.deviceId = state.deviceId;
             this.activityId = state.activityId;
             this.name = state.name;
 
-            state.stations.put(activityStationCreatedEvent.command.id, new ActivityStationState(activityStationCreatedEvent.command));
-            this.stations = state.stations;
+            ActivityStationState station = state.stations.get(activityStationEvent.stationId);
+            state.stations.put(activityStationEvent.stationId, new ActivityStationState(station, activityStationEvent));
+            this.stations = new WeakHashMap<>(state.stations);
         }
-
 
         public static State inception(ActivityEvents.ActivityCreatedEvent event) {
             return new State(event);

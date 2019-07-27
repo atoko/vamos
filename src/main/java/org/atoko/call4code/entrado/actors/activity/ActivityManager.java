@@ -15,6 +15,7 @@ import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ActivityManager extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityManager.State
@@ -57,12 +58,25 @@ public class ActivityManager extends EventSourcedEntity<
                         })
                 .onCommand(ActivityCommands.ActivityTargetedCommand.class,
                         (state, command) -> {
+                            AtomicReference<ActivityEvents.Event> event = new AtomicReference<>();
                             actorContext.getChild(command.activityId)
-                                    .ifPresentOrElse((action) -> {
-                                        ActorRef child = (ActorRef) action;
-                                        child.tell(command);
-                                    }, () -> command.replyTo.tell(new ActivityDetails.ActivityNullDetails()));
-                            return Effect().none();
+                                .ifPresentOrElse((action) -> {
+                                    ActorRef child = (ActorRef) action;
+                                    child.tell(command);
+                                    if (command instanceof ActivityCommands.ActivityStationCreateCommand) {
+                                        event.set(new ActivityEvents.ActivityStationCreatedEvent((ActivityCommands.ActivityStationCreateCommand)command));
+                                    }
+
+                                    if (command instanceof ActivityCommands.ActivityJoinCommand) {
+                                        event.set(new ActivityEvents.ActivityJoinedEvent((ActivityCommands.ActivityJoinCommand)command));
+                                    }
+                                }, () -> command.replyTo.tell(new ActivityDetails.ActivityNullDetails()));
+
+                            if (event.get() == null) {
+                                return Effect().none();
+                            } else {
+                                return Effect().persist(event.get());
+                            }
                         })
                 .onCommand(ActivityCommands.ActivityQueryPoll.class,
                         (state, poll) -> {
@@ -123,16 +137,19 @@ public class ActivityManager extends EventSourcedEntity<
             return new ActivityManager.State(this.map);
         }
 
-        public ActivityManager.State handle(ActivityEvents.ActivityStationCreatedEvent event) {
+        public ActivityManager.State handle(ActivityEvents.ActivityStationEvent event) {
             actorContext.getChild(event.command.activityId).ifPresent( action -> {
                 ActorRef child = (ActorRef) action;
-                //child.tell(new Act);
+                child.tell(event.command);
             });
             return this;
         }
 
-        public State handle(ActivityEvents.ActivityJoinedEvent event) {
-
+        public ActivityManager.State handle(ActivityEvents.ActivityJoinedEvent event) {
+            actorContext.getChild(event.command.activityId).ifPresent( action -> {
+                ActorRef child = (ActorRef) action;
+                child.tell(event.command);
+            });
             return this;
         }
     }

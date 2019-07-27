@@ -29,20 +29,31 @@ public class ActivityEvents {
 
     @Data
     public static class ActivityJoinedEvent extends Event {
-        String activityId;
-        String personId;
+        ActivityCommands.ActivityJoinCommand command;
 
         public ActivityJoinedEvent(ActivityCommands.ActivityJoinCommand command) {
-            this.activityId = command.activityId;
-            this.personId = command.personId;
-        }
-    }
-
-    public static class ActivityStationCreatedEvent extends Event {
-        public ActivityCommands.ActivityStationCreateCommand command;
-
-        public ActivityStationCreatedEvent(ActivityCommands.ActivityStationCreateCommand command) {
             this.command = command;
         }
     }
+
+    @Data
+    public static class ActivityStationEvent extends Event {
+        ActivityCommands.ActivityTargetedCommand command;
+        String stationId;
+
+        public ActivityStationEvent(String stationId, ActivityCommands.ActivityTargetedCommand command) {
+            this.stationId = stationId;
+            this.command = command;
+        }
+    }
+
+    @Data
+    public static class ActivityStationCreatedEvent extends ActivityStationEvent {
+        public ActivityStationCreatedEvent(ActivityCommands.ActivityStationCreateCommand command) {
+            super(command.id, command);
+        }
+
+
+    }
+
 }

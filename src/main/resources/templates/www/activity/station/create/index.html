@@ -1,0 +1,18 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:replace="views/includes.html :: head">
+    <head>
+<body>
+<header th:replace="views/clamp.html :: header"/>
+<h2>Create an Activity</h2>
+<form action="/www/activity/create/post" class="usa-form" method="post">
+    <fieldset class="usa-fieldset">
+        <legend class="usa-legend">Details</legend>
+
+        <label class="usa-label" for="name">Name</label>
+        <input aria-required="true" class="usa-input" personEntity="name" name="name" required type="text">
+
+        <input class="usa-button" type="submit" value="Create">
+    </fieldset>
+</form>
+</body>
+</html>

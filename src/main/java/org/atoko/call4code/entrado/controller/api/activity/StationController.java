@@ -36,27 +36,6 @@ public class StationController {
                 .map((station) -> ResponseEntity.ok(Collections.singletonMap("data", station))));
     }
 
-    @GetMapping("/station")
-    public Mono<ResponseEntity<Map<String, Object>>> get(
-            @RequestParam(value = "filter.stationId") String id
-    ) {
-        return activityService.get(id).map((activityList -> {
-            if (!StringUtils.isEmpty(id)) {
-                if (activityList.isEmpty()) {
-                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
-                }
-
-                ActivityDetails activity = activityList.get(0);
-                if (activity instanceof ActivityDetails.ActivityNullDetails) {
-                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
-                }
-
-                return ResponseEntity.ok(Collections.singletonMap("data", activityList.get(0)));
-            } else {
-                return ResponseEntity.ok(Collections.singletonMap("data", activityList));
-            }
-        }));
-    }
 //
 //    @PostMapping("/station/assign")
 //    public Mono<ResponseEntity<Map<String, ActivityDetails>>> join(

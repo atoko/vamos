@@ -2,6 +2,7 @@ package org.atoko.call4code.entrado.controller.views;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atoko.call4code.entrado.controller.api.activity.ActivityController;
+import org.atoko.call4code.entrado.controller.api.activity.StationController;
 import org.atoko.call4code.entrado.controller.views.store.ActivityStore;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class ActivityViewController {
 
     @Autowired
     private ActivityController activityController;
+
+    @Autowired
+    private StationController stationController;
 
     @RequestMapping(value = {"", "/"})
     public Mono<String> index(Model model) {
@@ -56,6 +60,27 @@ public class ActivityViewController {
 
     @PostMapping("/create/post")
     public Mono<String> postCreate(
+            ServerWebExchange webExchange,
+            WebSession webSession
+    ) {
+        return webExchange.getFormData().flatMap((fd) -> {
+            return activityController.post(fd.getFirst("name"))
+                    .map((response) -> {
+                        ActivityDetails activityDetails = response.getBody().get("data");
+                        ActivityStore.setCurrentActivity(webSession, activityDetails);
+                        return "redirect:/www/activity/details/" + activityDetails.getActivityId();
+                    });
+        });
+
+    }
+
+    @RequestMapping(value = {"/station/create"})
+    public Mono<String> createStation() {
+        return Mono.just("www/activity/station/create/index");
+    }
+
+    @PostMapping("/station/create/post")
+    public Mono<String> postStationCreate(
             ServerWebExchange webExchange,
             WebSession webSession
     ) {

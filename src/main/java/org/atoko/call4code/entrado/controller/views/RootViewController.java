@@ -44,7 +44,7 @@ public class RootViewController {
     @RequestMapping(value = {"/", "/www"})
     public Mono<String> index(ServerWebExchange serverWebExchange, Principal principal) {
         if (principal != null) {
-            return Mono.just("redirect:/www/menu");
+            return Mono.just("redirect:/www/activity");
         } else {
             return Mono.just("redirect:/www/signin");
         }

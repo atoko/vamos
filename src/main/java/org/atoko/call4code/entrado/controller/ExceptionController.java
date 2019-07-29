@@ -6,8 +6,10 @@ import org.atoko.call4code.entrado.model.error.ErrorNode;
 import org.atoko.call4code.entrado.model.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 
 @ControllerAdvice
 public class ExceptionController {
@@ -27,6 +29,12 @@ public class ExceptionController {
     public String defaultExceptionHandler(FrontendException ex) {
         return "redirect:" + ex.getRedirect();
     }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public String defaultExceptionHandler(AccessDeniedException ex) {
+        return "redirect:/www/logout";
+    }
+
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> defaultExceptionHandler(Exception ex) {

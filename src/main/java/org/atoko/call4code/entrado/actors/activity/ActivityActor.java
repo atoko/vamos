@@ -126,6 +126,7 @@ public class ActivityActor extends EventSourcedEntity<
         public State(State state, ActivityEvents.ActivityStationEvent activityStationEvent) {
             this.deviceId = state.deviceId;
             this.activityId = state.activityId;
+            this.personIds = state.personIds;
             this.name = state.name;
 
             ActivityStationState station = state.stations.get(activityStationEvent.stationId);

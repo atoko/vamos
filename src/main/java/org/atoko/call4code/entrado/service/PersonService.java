@@ -32,9 +32,15 @@ public class PersonService {
     @Autowired
     private ActorSystemService actorSystemService;
 
+    private EntityRef shard;
+
     private EntityRef getShard() {
         String deviceId = deviceService.getDeviceId();
-        return actorSystemService.child(PersonManager.entityTypeKey(deviceId), PersonManager.getEntityId(deviceId));
+        if (shard == null) {
+            shard = actorSystemService.child(PersonManager.entityTypeKey(deviceId), PersonManager.getEntityId(deviceId));
+        }
+
+        return shard;
     }
 
     public Mono<PersonDetails> create(String firstName, String lastName, String pin) {

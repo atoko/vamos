@@ -35,10 +35,15 @@ public class ActivityStationService {
 
     @Autowired
     private ActorSystemService actorSystemService;
+    private EntityRef shard;
 
     private EntityRef getShard() {
         String deviceId = deviceService.getDeviceId();
-        return actorSystemService.child(ActivityManager.entityTypeKey(deviceId), ActivityManager.getEntityId(deviceId));
+        if (shard == null) {
+            shard =  actorSystemService.child(ActivityManager.entityTypeKey(deviceId), ActivityManager.getEntityId(deviceId));
+        }
+
+        return shard;
     }
 
     public Mono<ActivityDetails> create(ActivityDetails activityDetails, String name) {
@@ -75,6 +80,16 @@ public class ActivityStationService {
     public Mono<ActivityDetails> assign(String activityId, String stationId, String personId) {
         return toMono(getShard().ask((replyTo) ->
                 new ActivityCommands.ActivityStationAssignCommand(
+                        (ActorRef) replyTo,
+                        ActivityActor.getEntityId(deviceService.getDeviceId(), activityId),
+                        stationId,
+                        new PersonIdentifier(deviceService.getDeviceId(), personId)
+                ), duration));
+    }
+
+    public Mono<ActivityDetails> next(String activityId, String stationId, String personId) {
+        return toMono(getShard().ask((replyTo) ->
+                new ActivityCommands.ActivityStationNextQueueCommand(
                         (ActorRef) replyTo,
                         ActivityActor.getEntityId(deviceService.getDeviceId(), activityId),
                         stationId,

@@ -6,6 +6,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class ActorTest {
-    @Autowired
-    ActorSystem system;
+//    @Autowired
+//    ActorSystem system;
 }

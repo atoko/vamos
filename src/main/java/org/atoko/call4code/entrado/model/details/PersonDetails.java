@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 
+import static org.atoko.call4code.entrado.utils.Encryption.encrypt;
+
 @Data
 public class PersonDetails {
 
@@ -52,6 +54,11 @@ public class PersonDetails {
 
     public String getUniqueId() {
         return String.format("%s;%s", deviceId, personId);
+    }
+
+    @JsonIgnore
+    public String getEncryptedPersonId() {
+        return encrypt(this.personId.getBytes());
     }
 
     public static class PersonNullDetails extends PersonDetails {

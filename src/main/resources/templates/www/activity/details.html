@@ -37,7 +37,7 @@
 
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="font-serif-md">
                             <tr th:each="station1 : *{stations}">
                                 <td>
                                     <a th:href="@{'/www/activity/details/' + ${station1.activityId} + '/station/' + ${station1.stationId}}">
@@ -83,7 +83,7 @@
 
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="font-serif-md">
                                 <tr th:each="teamPersonId, iteration : *{personIds}">
                                     <th:block th:object="${_person_map.get(teamPersonId.personId)}">
                                         <td>
@@ -102,4 +102,5 @@
             </div>
         </section>
     </body>
+    <footer th:replace="views/clamp.html :: footer"/>
 </html>

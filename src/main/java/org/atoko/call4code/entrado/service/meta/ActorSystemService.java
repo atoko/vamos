@@ -70,12 +70,17 @@ public class ActorSystemService {
         return actorSystem.uptime();
     }
 
+    private EntityRef shard;
     public EntityRef get() {
         String deviceId = deviceService.getDeviceId();
-        return child(DeviceSupervisor.entityTypeKey(deviceId), DeviceSupervisor.getEntityId(deviceId));
+        if (shard == null) {
+            shard = child(DeviceSupervisor.entityTypeKey(deviceId), DeviceSupervisor.getEntityId(deviceId));
+        }
+
+        return shard;
     }
 
     public EntityRef child(EntityTypeKey entityTypeKey, String identifier) {
-        return ClusterSharding.get(actorSystem).entityRefFor(entityTypeKey, identifier);
+        return clusterSharding.entityRefFor(entityTypeKey, identifier);
     }
 }

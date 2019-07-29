@@ -29,7 +29,12 @@ public class ActivityStationState {
                 state.queue.add(((ActivityEvents.ActivityStationQueueJoinedEvent) event).personIdentifier);
             }
             this.queue = new ArrayDeque<>(state.queue);
-        }else if (event instanceof ActivityEvents.ActivityStationQueueAssignedEvent) {
+        } else if(event instanceof ActivityEvents.ActivityStationQueueNextEvent) {
+            if (assignedTo != null && ((ActivityEvents.ActivityStationQueueNextEvent) event).personIdentifier.personId.equals(assignedTo.personId)) {
+                state.queue.poll();
+                this.queue = new ArrayDeque<>(state.queue);
+            }
+        } else if (event instanceof ActivityEvents.ActivityStationQueueAssignedEvent) {
             this.assignedTo = ((ActivityEvents.ActivityStationQueueAssignedEvent) event).personIdentifier;
         }
     }

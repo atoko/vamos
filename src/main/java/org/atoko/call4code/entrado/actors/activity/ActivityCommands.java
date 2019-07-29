@@ -127,6 +127,16 @@ public class ActivityCommands {
     }
 
     @Data
+    public static class ActivityStationAssignCommand extends ActivityStationTargetedCommand{
+        public PersonIdentifier personId;
+
+        public ActivityStationAssignCommand(ActorRef replyTo, String activityId, String stationId, PersonIdentifier personId) {
+            super(replyTo, activityId, stationId);
+            this.personId = personId;
+        }
+    }
+
+    @Data
     public static class ActivityStationJoinQueueCommand extends ActivityStationTargetedCommand{
         public PersonIdentifier personId;
 
@@ -137,12 +147,14 @@ public class ActivityCommands {
     }
 
     @Data
-    public static class ActivityStationAssignCommand extends ActivityStationTargetedCommand{
+    public static class ActivityStationNextQueueCommand extends ActivityStationTargetedCommand{
         public PersonIdentifier personId;
 
-        public ActivityStationAssignCommand(ActorRef replyTo, String activityId, String stationId, PersonIdentifier personId) {
+        public ActivityStationNextQueueCommand(ActorRef replyTo, String activityId, String stationId, PersonIdentifier personId) {
             super(replyTo, activityId, stationId);
             this.personId = personId;
         }
     }
+
+
 }

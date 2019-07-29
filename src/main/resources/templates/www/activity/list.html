@@ -11,13 +11,17 @@
                     </button>
                 </a>
             </div>
-            <th:block th:with="hasActivities = ${_activity_activities != null && _activity_activities.isEmpty()}">
-                <th:block th:if="${hasActivities}">
-                    <div class="grid-row">
-                        No activities, please create one
+            <th:block th:with="hasNoActivities = ${_activity_activities != null && _activity_activities.isEmpty()}">
+                <th:block th:if="${hasNoActivities}">
+                    <div class="usa-alert usa-alert--warning" role="alert">
+                        <div class="usa-alert__body">
+                            <h3 class="usa-alert__heading">No Activities!</h3>
+                            <p class="usa-alert__text">To begin, please create an activity</p>
+                        </div>
                     </div>
+
                 </th:block>
-                <th:block th:unless="${hasActivities}">
+                <th:block th:unless="${hasNoActivities}">
                     <div class="grid-row" style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
@@ -25,7 +29,7 @@
                                 <th>Name</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="font-serif-md">
                             <tr th:each="activity : ${_activity_activities}">
                                 <td>
                                     <a th:href="@{'/www/activity/details/' + *{activity.getActivityId()}}">
@@ -40,4 +44,5 @@
             </th:block>
         </section>
     </body>
+    <footer th:replace="views/clamp.html :: footer"/>
 </html>

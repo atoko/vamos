@@ -4,7 +4,7 @@
         <div class="width-full grid-row grid-gap padding-bottom-1">
             <div class="grid-col-fill" id="basic-logo">
                 <span class="font-body-xl text-bold">
-                    <a class="text-base-lightest text-no-underline" aria-label="Home" href="/" title="Home">Vamos</a>
+                    <a class="text-base-lightest text-no-underline" aria-label="Home" href="/" title="Home">Vamos Checkin</a>
                 </span>
             </div>
             <div style="align-self:center;text-align:right" class="font-body-3xs grid-col-3" th:if="${__activity_current}" th:object="${__activity_current}">
@@ -18,4 +18,59 @@
         </div>
     </div>
 </header>
+<footer class="usa-footer usa-footer--slim" role="contentinfo" th:fragment="footer">
+    <div class="grid-container usa-footer__return-to-top">
+        <a href="#">Return to top</a>
+    </div>
+    <div class="usa-footer__primary-section">
+        <div class="grid-row grid-row maxw-desktop margin-x-auto desktop:padding-x-4">
+            <div class="mobile-lg:grid-col-8">
+                <nav class="usa-footer__nav">
+                    <ul class="add-list-reset grid-row grid-gap">
+                        <li class="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                            <a class="usa-footer__primary-link" href="/www/signin">Sign In</a>
+                        </li>
+                        <li class="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                            <a class="usa-footer__primary-link" href="/www/activity">Activities</a>
+                        </li>
+                        <li class="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                            <a class="usa-footer__primary-link" href="/www/arrivals/register">Register</a>
+                        </li>
+                        <li class="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                            <a class="usa-footer__primary-link" href="/www/logout">Logout</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="mobile-lg:grid-col-4">
+                <address class="usa-footer__address">
+                    <div class="grid-row grid-gap mobile-lg:grid-gap-0">
+                        <div class="grid-col-auto mobile-lg:grid-col-12 desktop:grid-col-auto">
+                            <div class="usa-footer__contact-info">
+                                <a href="tel:1-800-555-5555">(800) CALL-PDRO</a>
+                            </div>
+                        </div>
+                        <div class="grid-col-auto mobile-lg:grid-col-12 desktop:grid-col-auto">
+                            <div class="usa-footer__contact-info">
+                                <a href="mailto:info@agency.gov">pedro@evermagica.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </address>
+            </div>
+        </div>
+    </div>
+    <div class="usa-footer__secondary-section">
+        <div class="grid-container">
+            <div class="usa-footer__logo grid-row grid-gap-2">
+<!--                <div class="grid-col-auto">-->
+<!--                    <img class="usa-footer__logo-img" src="/assets/img/logo-img.png" alt="">-->
+<!--                </div>-->
+                <div class="grid-col-auto">
+                    <h3 class="usa-footer__logo-heading">Powered by Vamos</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
 </html>

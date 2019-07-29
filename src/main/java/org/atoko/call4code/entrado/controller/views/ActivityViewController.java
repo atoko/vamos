@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
+import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.Cipher;
@@ -31,56 +32,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.atoko.call4code.entrado.controller.views.store.AuthenticationStore.AUTHENTICATION_CURRENT;
+import static org.atoko.call4code.entrado.utils.Encryption.decrypt;
+import static org.atoko.call4code.entrado.utils.Encryption.encrypt;
 
 @Controller
 @RequestMapping("/www/activity")
 @PreAuthorize("hasRole('ROLE_PERSON')")
 public class ActivityViewController {
-
-    static final byte[] encryptionKey = UUID.randomUUID().toString().getBytes();
-    static Cipher encryptCipher;
-    static Cipher decryptCypher;
-    static private ObjectMapper objectMapper = new ObjectMapper();
-
-    static {
-        try {
-            SecureRandom sr = new SecureRandom(encryptionKey);
-            KeyGenerator kg = KeyGenerator.getInstance("RC4");
-            kg.init(sr);
-            SecretKey sk = kg.generateKey();
-            // create an instance of encryptCipher
-            encryptCipher = Cipher.getInstance("RC4");
-            encryptCipher.init(Cipher.ENCRYPT_MODE, sk);
-
-
-            decryptCypher = Cipher.getInstance("RC4");
-            decryptCypher.init(Cipher.DECRYPT_MODE, sk);
-        } catch (Exception e) {
-
-        }
-    }
-
-    private static String encrypt(byte[] key) {
-        try {
-            return objectMapper.writeValueAsString(encryptCipher.doFinal(key));
-        } catch (Throwable t) {
-            LoggerFactory.getLogger("ACTIVITY_VIEW").error("Error creating crypted ID", t);
-            return "";
-        }
-    }
-
-    private static String decrypt(String encrypted) {
-        try {
-            byte[] bytes = objectMapper.readTree(encrypted).binaryValue();
-            return new String(decryptCypher.doFinal(bytes));
-        } catch (Throwable t) {
-            LoggerFactory.getLogger("ACTIVITY_VIEW").error("Error reading crypted ID", t);
-            return "";
-        }
-    }
-
-
-
     @Autowired
     private ActivityController activityController;
 
@@ -122,7 +80,6 @@ public class ActivityViewController {
                     personMap.put(person.personId, person);
                 }
                 model.addAttribute("_person_map", personMap);
-
                 return "www/activity/details";
             });
         });
@@ -201,6 +158,8 @@ public class ActivityViewController {
                     personIds.add(activityStationDetails.assignedPersonId.personId);
                 }
 
+                activityDetails.personIds.stream().forEach((personIdentifier -> personIds.add(personIdentifier.personId)));
+
                 return personQueryController.getPerson(personIds).map((people) -> {
                     Map<String, PersonDetails> personMap = new HashMap<>();
                     for (PersonDetails person : people.getBody().get("data")) {
@@ -211,6 +170,7 @@ public class ActivityViewController {
                             "_person_map",
                             personMap
                     );
+
                     return "www/activity/station/details";
                 });
             } else {
@@ -278,8 +238,8 @@ public class ActivityViewController {
         });
     }
 
-    @PostMapping("/details/station/assign")
-    public Mono<String> postStationAssign(
+    @PostMapping("/details/station/next")
+    public Mono<String> postStationNext(
             ServerWebExchange webExchange,
             WebSession webSession,
             Model model
@@ -293,11 +253,37 @@ public class ActivityViewController {
                     String stationId = decrypt(formData.getFirst("_stationId$$"));
                     String personId = personDetails.personId;
 
-                    return stationController.assign(activityId, stationId, personId)
+                    return stationController.next(activityId, stationId, personId)
                             .map((response) -> {
                                 ActivityDetails activityStationDetails = response.getBody().get("data");
                                 return "redirect:/www/activity/details/" + activityId + "/station/" + stationId;
                             });
                 });
+    }
+
+    @PostMapping("/details/station/assign")
+    public Mono<String> postStationAssign(
+            ServerWebExchange webExchange,
+            WebSession webSession,
+            Model model
+    ) {
+        return webExchange.getFormData()
+            .flatMap((authAndForm) -> {
+                MultiValueMap<String, String> formData = authAndForm;
+
+                String activityId = decrypt(formData.getFirst("_activityId$$"));
+                String stationId = decrypt(formData.getFirst("_stationId$$"));
+                String personId = decrypt(formData.getFirst("_personId$$"));
+
+                if (StringUtils.isEmptyOrWhitespace(personId)) {
+                    return Mono.just("redirect:/www/activity/details/" + activityId + "/station/" + stationId);
+                }
+
+                return stationController.assign(activityId, stationId, personId)
+                        .map((response) -> {
+                            ActivityDetails activityStationDetails = response.getBody().get("data");
+                            return "redirect:/www/activity/details/" + activityId + "/station/" + stationId;
+                        });
+            });
     }
 }

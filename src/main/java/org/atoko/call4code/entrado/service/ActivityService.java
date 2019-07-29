@@ -33,9 +33,15 @@ public class ActivityService {
     @Autowired
     private ActorSystemService actorSystemService;
 
+    private EntityRef shard;
+
     private EntityRef getShard() {
         String deviceId = deviceService.getDeviceId();
-        return actorSystemService.child(ActivityManager.entityTypeKey(deviceId), ActivityManager.getEntityId(deviceId));
+        if (shard == null) {
+            shard = actorSystemService.child(ActivityManager.entityTypeKey(deviceId), ActivityManager.getEntityId(deviceId));
+        }
+
+        return shard;
     }
 
     public Mono<ActivityDetails> create(String name) {

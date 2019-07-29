@@ -12,51 +12,50 @@
                     <h2 class="margin-top-1em" th:text="*{getName()}"/>
                 </div>
             </div>
-            <div id="team_members_accordion" class="usa-accordion usa-accordion--bordered">
+            <div id="team_members_accordion" class="grid-container usa-accordion usa-accordion--bordered">
                 <h2 class="usa-accordion__heading">
                     <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button bg-accent-cool-light">
                         Assigned Team Member
                     </button>
                 </h2>
                 <div class="usa-accordion__content usa-prose" id="a1">
+                    <form method="post"
+                          style="align-self: center"
+                          th:action="@{'/www/activity/details/station/assign/'}">
+                        <input aria-required="true"
+                               class="usa-input"
+                               name="_activityId$$"
+                               required
+                               type="hidden"
+                               th:value="${_activity_activityId$$}"
+                        >
+                        <input aria-required="true"
+                               class="usa-input"
+                               name="_stationId$$"
+                               required
+                               type="hidden"
+                               th:value="${_station_stationId$$}"
+                        >
+                        <select class="usa-select" name="_personId$$" style="display:inline-block;width:auto;">
+                            <th:block th:each="personIdentifier : ${_activity_details.personIds}">
+                                <th:block th:object="${_person_map.get(personIdentifier.personId)}">
+                                    <option th:value="*{getEncryptedPersonId()}" th:text="*{firstName} + ' ' + *{lastName}"></option>
+                                </th:block>
+                            </th:block>
+                        </select>
+                        <button type="submit" class="usa-button">
+                            <span>Assign</span>
+                        </button>
+                    </form>
                     <div style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
                             <tr>
                                 <th class="grid-col-3">Last Name</th>
                                 <th class="grid-col-auto">First Name</th>
-                                <th style="text-align:right">
-                                    <form method="post"
-                                          style="align-self: center"
-                                          th:action="@{'/www/activity/details/station/assign/'}">
-                                        <input aria-required="true"
-                                               class="usa-input"
-                                               name="_activityId$$"
-                                               required
-                                               type="hidden"
-                                               th:value="${_activity_activityId$$}"
-                                        >
-                                        <input aria-required="true"
-                                               class="usa-input"
-                                               name="_stationId$$"
-                                               required
-                                               type="hidden"
-                                               th:value="${_station_stationId$$}"
-                                        >
-                                        <select>
-                                            <th:block th:each="personId : ${_activity_details.personIds}">
-                                                <option th:value="${personId}" th:text="${personId}"></option>
-                                            </th:block>
-                                        </select>
-                                        <button type="submit" class="usa-button">
-                                            <span>Assign</span>
-                                        </button>
-                                    </form>
-                                </th>
-
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="font-serif-md">
                                 <th:block
                                         th:if="*{assignedPersonId != null}"
                                         th:object="${_person_map.get(_station_details.assignedPersonId.personId)}"
@@ -67,7 +66,6 @@
                                     <td>
                                         <span th:text="*{getFirstName()}"></span>
                                     </td>
-                                    <td></td>
                                 </th:block>
                             </tbody>
                         </table>
@@ -81,6 +79,43 @@
                     </button>
                 </h2>
                 <div class="usa-accordion__content usa-prose" id="a2">
+                    <div th:if="*{queue != null && !queue.isEmpty()}">
+                        <div class="grid-row grid-gap-05" th:object="${_person_map.get(_station_details.queue.get(0).personId)}">
+                            <div class="font-body-md">Currently Attending: </div>
+                            <div class="font-serif-lg">
+                                <strong th:text="*{getFirstName()}"/>
+                                <strong th:text="*{getLastName()}"/>
+                            </div>
+                        </div>
+
+                        <div th:if="${_station_details.assignedPersonId != null && _station_details.assignedPersonId.personId.equals(__authentication_current.personId)}">
+                            <th:block th:object="${_person_map.get(_station_details.assignedPersonId.personId)}">
+                                <form method="post"
+                                      style="align-self: center;display:inline-block"
+                                      th:action="@{'/www/activity/details/station/next/' }">
+                                    <input aria-required="true"
+                                           class="usa-input"
+                                           name="_activityId$$"
+                                           required
+                                           type="hidden"
+                                           th:value="${_activity_activityId$$}"
+                                    >
+                                    <input aria-required="true"
+                                           class="usa-input"
+                                           name="_stationId$$"
+                                           required
+                                           type="hidden"
+                                           th:value="${_station_stationId$$}"
+                                    >
+
+                                    <button type="submit" class="usa-button usa-button--secondary">Next</button>
+                                </form>
+                                <a>
+                                </a>
+                                <button disabled class="usa-button usa-button--disabled">Skip</button>
+                            </th:block>
+                        </div>
+                    </div>
                     <div style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
@@ -114,9 +149,9 @@
 
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="font-serif-md">
                                 <tr th:each="queuedPersonId, iteration : *{queue}">
-                                    <th:block th:object="${_person_map.get(queuedPersonId.personId)}">
+                                    <th:block th:if="${iteration.index > 0}" th:object="${_person_map.get(queuedPersonId.personId)}">
                                         <td>
                                             <span th:text="${iteration.index}"></span>
                                         </td>
@@ -136,4 +171,5 @@
             </div>
         </section>
     </body>
+    <footer th:replace="views/clamp.html :: footer"/>
 </html>

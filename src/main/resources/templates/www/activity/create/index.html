@@ -3,7 +3,7 @@
     <body>
         <header th:replace="views/clamp.html :: header"/>
         <section class="grid-container">
-            <h2 style="flex-grow: 1">Activities</h2>
+            <h2>Activities</h2>
             <form action="/www/activity/create/post" class="usa-form" method="post">
                 <fieldset class="usa-fieldset">
                     <legend class="usa-legend">Create an Activity</legend>
@@ -16,4 +16,5 @@
             </form>
         </section>
     </body>
+    <footer th:replace="views/clamp.html :: footer"/>
 </html>

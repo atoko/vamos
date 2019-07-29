@@ -37,7 +37,7 @@ public class StationController {
     }
 
 //
-    @PostMapping("{activityId}/station/assign/")
+    @PostMapping("{activityId}/station/assign/{stationId}")
     public Mono<ResponseEntity<Map<String, ActivityDetails>>> assign(
             @PathVariable String activityId,
             @PathVariable String stationId,
@@ -55,8 +55,20 @@ public class StationController {
             @PathVariable String stationId,
             @RequestBody String personId
     ) {
+
         return activityService.getById(activityId)
                 .flatMap(activityDetails -> activityStationService.join(activityId, stationId, personId)
                 .map((station) -> ResponseEntity.ok(Collections.singletonMap("data", station))));
+    }
+
+    @PostMapping("/{activityId}/station/next/{stationId}")
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> next(
+            @PathVariable String activityId,
+            @PathVariable String stationId,
+            @RequestBody String personId
+    ) {
+        return activityService.getById(activityId)
+                .flatMap(activityDetails -> activityStationService.next(activityId, stationId, personId)
+                        .map((station) -> ResponseEntity.ok(Collections.singletonMap("data", station))));
     }
 }

@@ -27,9 +27,9 @@ public class StationController {
 
 
     @PostMapping("/station")
-    public Mono<ResponseEntity<Map<String, ActivityStationDetails>>> post(
-            @RequestBody String name,
-            @RequestParam(value= "filter.activityId") String activityId
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> post(
+            @RequestParam(value= "filter.activityId") String activityId,
+            @RequestBody String name
     ) {
         return activityService.getById(activityId)
                 .flatMap(activityDetails -> activityStationService.create(activityDetails, name)
@@ -37,33 +37,26 @@ public class StationController {
     }
 
 //
-//    @PostMapping("/station/assign")
-//    public Mono<ResponseEntity<Map<String, ActivityDetails>>> join(
-//            @RequestParam(value = "filter.activityId") String activityId,
-//            @RequestBody String personId
-//    ) {
-//        return activityService.join(activityId, personId)
-//                .map((activity) -> {
-//                    if (activity instanceof ActivityDetails.ActivityNullDetails) {
-//                        throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
-//                    }
+    @PostMapping("{activityId}/station/assign/")
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> assign(
+            @PathVariable String activityId,
+            @PathVariable String stationId,
+            @RequestBody String personId
+    ) {
+
+        return activityService.getById(activityId)
+            .flatMap(activityDetails -> activityStationService.assign(activityId, stationId, personId)
+            .map((station) -> ResponseEntity.ok(Collections.singletonMap("data", station))));
+    }
 //
-//                    return ResponseEntity.ok(Collections.singletonMap("data", activity));
-//                });
-//    }
-//
-//    @PostMapping("/station/join")
-//    public Mono<ResponseEntity<Map<String, ActivityDetails>>> join(
-//            @RequestParam(value = "filter.activityId") String activityId,
-//            @RequestBody String personId
-//    ) {
-//        return activityService.join(activityId, personId)
-//                .map((activity) -> {
-//                    if (activity instanceof ActivityDetails.ActivityNullDetails) {
-//                        throw new ResponseCodeException(HttpStatus.NOT_FOUND, "ACTIVITY_NOT_FOUND");
-//                    }
-//
-//                    return ResponseEntity.ok(Collections.singletonMap("data", activity));
-//                });
-//    }
+    @PostMapping("/{activityId}/station/join/{stationId}")
+    public Mono<ResponseEntity<Map<String, ActivityDetails>>> join(
+            @PathVariable String activityId,
+            @PathVariable String stationId,
+            @RequestBody String personId
+    ) {
+        return activityService.getById(activityId)
+                .flatMap(activityDetails -> activityStationService.join(activityId, stationId, personId)
+                .map((station) -> ResponseEntity.ok(Collections.singletonMap("data", station))));
+    }
 }

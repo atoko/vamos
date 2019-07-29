@@ -1,28 +1,36 @@
 package org.atoko.call4code.entrado.model.details;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.atoko.call4code.entrado.actors.activity.ActivityActor;
 import org.atoko.call4code.entrado.actors.activity.ActivityStationState;
+import org.atoko.call4code.entrado.model.identifiers.PersonIdentifier;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Data
 public class ActivityStationDetails {
+    @JsonIgnore
     public String deviceId = "";
+    @JsonIgnore
     public String activityId = "";
     public String stationId = "";
     public String name = "";
-    public String assignedPersonId = "";
+    public PersonIdentifier assignedPersonId;
+    public List<PersonIdentifier> queue = Collections.emptyList();
 
     public ActivityStationDetails(ActivityActor.State actor, ActivityStationState station) {
         this.deviceId = actor.deviceId.id();
         this.activityId = actor.activityId.id();
-        this.stationId = station.id;
+        this.stationId = station.stationId;
+        this.assignedPersonId = station.assignedTo;
         this.name = station.name;
+        this.queue = new ArrayList(station.queue);
     }
 
-    public ActivityStationDetails(String deviceId, String activityId, String stationId, String name, String assignedPersonId) {
+    public ActivityStationDetails(String deviceId, String activityId, String stationId, String name, PersonIdentifier assignedPersonId) {
         this.deviceId = deviceId;
         this.activityId = activityId;
         this.stationId = stationId;
@@ -44,7 +52,7 @@ public class ActivityStationDetails {
 
     public static class ActivityStationNullDetails extends ActivityStationDetails {
         public ActivityStationNullDetails() {
-            super("", "", "" , "", "");
+            super("", "", "" , "", PersonIdentifier.empty);
         }
     }
 }

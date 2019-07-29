@@ -1,21 +1,20 @@
 <html xmlns:th="http://www.springframework.org/schema/security">
-<header class="usa-header usa-header--basic" role="banner" th:fragment="header">
-    <div class="usa-nav-container">
-        <div class="usa-navbar">
-
-            <p th:if="${__activity_current}" th:object="${__activity_current}">
+<header class="usa-header usa-header--basic bg-primary text-base-lightest" role="banner" th:fragment="header">
+    <div class="usa-nav-container grid-container">
+        <div class="width-full grid-row grid-gap padding-bottom-1">
+            <div class="grid-col-fill" id="basic-logo">
+                <span class="font-body-xl text-bold">
+                    <a class="text-base-lightest text-no-underline" aria-label="Home" href="/" title="Home">Vamos</a>
+                </span>
+            </div>
+            <div style="align-self:center;text-align:right" class="font-body-3xs grid-col-3" th:if="${__activity_current}" th:object="${__activity_current}">
                 <span th:text="*{getName()}"/>
-            </p>
-
-
-            <p th:if="${__authentication_current}" th:object="${__authentication_current}">
+            </div>
+            <div style="align-self:center;text-align:right" class="font-body-sm grid-col-3" th:if="${__authentication_current}" th:object="${__authentication_current}">
                 <span th:text="*{getFirstName()}"/>
                 <span th:text="*{getLastName()}"/>
-            </p>
-
-            <div class="usa-logo" personId="basic-logo">
-                <em class="usa-logo__text"><a aria-label="Home" href="/" title="Home">Vamonos</a></em>
             </div>
+
         </div>
     </div>
 </header>

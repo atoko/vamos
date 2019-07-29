@@ -2,6 +2,7 @@ package org.atoko.call4code.entrado.model.details;
 
 import lombok.Data;
 import org.atoko.call4code.entrado.actors.activity.ActivityActor;
+import org.atoko.call4code.entrado.model.identifiers.PersonIdentifier;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,7 @@ public class ActivityDetails {
     public String deviceId = "";
     public String activityId = "";
     public String name = "";
-    public List<String> personIds = Collections.EMPTY_LIST;
+    public List<PersonIdentifier> personIds = Collections.EMPTY_LIST;
     public List<ActivityStationDetails> stations = Collections.EMPTY_LIST;
 
     public ActivityDetails(ActivityActor.State actor) {
@@ -24,7 +25,7 @@ public class ActivityDetails {
         this.stations = actor.stations.values().stream().map(station -> new ActivityStationDetails(actor, station)).collect(Collectors.toList());
     }
 
-    public ActivityDetails(String deviceId, String activityId, String name, List<String> personIds) {
+    public ActivityDetails(String deviceId, String activityId, String name, List<PersonIdentifier> personIds) {
         this.deviceId = deviceId;
         this.activityId = activityId;
         this.name = name;

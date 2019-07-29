@@ -3,34 +3,34 @@
     <body>
         <header th:replace="views/clamp.html :: header"/>
         <section
-            class="usa-section grid-container"
-            th:object="${_activity_details}"
+                class="grid-container"
+                th:object="${_activity_details}"
         >
             <div class="grid-row">
                 <div style="flex-grow:1;align-self:center">
-                    <span>Viewing Activity</span>
+                    <h3>Viewing Activity</h3>
                     <h2 class="margin-top-1em" th:text="*{getName()}"/>
                 </div>
                 <div>
-                    <span>You have not joined this activity</span>
+                    <a th:href="@{/www/activity/}">Back to activity list</a>
                 </div>
             </div>
-            <div class="usa-accordion">
+            <div id="stations_accordion" class="usa-accordion usa-accordion--bordered">
                 <h2 class="usa-accordion__heading">
-                    <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button">
+                    <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button bg-accent-cool-light">
                         Stations
                     </button>
                 </h2>
                 <div class="usa-accordion__content usa-prose" id="a1">
-                    <div class="grid-row grid-gap-05"  style="padding-left:1em">
+                    <div style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
                             <tr>
-                                <th>Name</th>
-                                <th style="text-align:right">
-                                    <a style="align-self: center" th:href="@{/www/activity/station/create}">
+                                <th class="grid-col-fill">Name</th>
+                                <th class="grid-col" style="text-align:right">
+                                    <a style="align-self: center" th:href="@{'/www/activity/details/'+ *{activityId} +'/station/create'}">
                                         <button class="usa-button">
-                                            <span>Add</span>
+                                            <span class="">Create Station</span>
                                         </button>
                                     </a>
                                 </th>
@@ -38,16 +38,67 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="station : *{stations}">
+                            <tr th:each="station1 : *{stations}">
                                 <td>
-                                    <a th:href="@{'/www/activity/details/'+*{activity.getActivityId()}}">
-                                        <span th:text="*{station.name}"></span>
+                                    <a th:href="@{'/www/activity/details/' + ${station1.activityId} + '/station/' + ${station1.stationId}}">
+                                        <span th:text="${station1.name}"></span>
                                     </a>
                                 </td>
+                                <td></td>
                             </tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+            <div id="people_accordion" class="usa-accordion usa-accordion--bordered">
+                <h2 class="usa-accordion__heading">
+                    <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button bg-accent-cool-light">
+                        Team Members
+                    </button>
+                </h2>
+                <div class="usa-accordion__content usa-prose" id="a2">
+                    <div style="padding-left:1em">
+                        <table class="usa-table usa-table--borderless width-full">
+                            <thead>
+                            <tr>
+                                <th class="grid-col-3">Last Name</th>
+                                <th class="grid-col-auto">First Name</th>
+                                <th style="text-align:right">
+                                    <form method="post"
+                                          style="align-self: center"
+                                          th:action="@{'/www/activity/join' }">
+                                        <input aria-required="true"
+                                               class="usa-input"
+                                               name="_activityId$$"
+                                               required
+                                               type="hidden"
+                                               th:value="${_activity_activityId$$}"
+                                        >
+                                        <button type="submit" class="usa-button">
+                                            <span>Join Activity</span>
+                                        </button>
+                                    </form>
+                                </th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="teamPersonId, iteration : *{personIds}">
+                                    <th:block th:object="${_person_map.get(teamPersonId.personId)}">
+                                        <td>
+                                            <span th:text="*{getLastName()}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="*{getFirstName()}"></span>
+                                        </td>
+                                        <td></td>
+                                    </th:block>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
     </body>

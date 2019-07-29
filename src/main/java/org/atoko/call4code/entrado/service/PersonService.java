@@ -65,11 +65,15 @@ public class PersonService {
     }
 
 
-    public Mono<List<PersonDetails>> get(String id) {
-        if (!StringUtils.isEmpty(id)) {
-            return getById(id).map(Collections::singletonList);
+    public Mono<List<PersonDetails>> get(List<String> ids) {
+        if (!ids.isEmpty()) {
+            if (ids.size() == 1) {
+                return getById(ids.get(0)).map(Collections::singletonList);
+            } else {
+                return getAll(ids).map(List::of);
+            }
         } else {
-            return getAll().map(List::of);
+            return getAll(ids).map(List::of);
         }
     }
 
@@ -78,7 +82,7 @@ public class PersonService {
                 new PersonCommands.PersonDetailsPoll((ActorRef) replyTo, PersonActor.getEntityId(deviceService.getDeviceId(), id)), duration));
     }
 
-    private Mono<PersonDetails[]> getAll() {
-        return toMono(getShard().ask((replyTo) -> new PersonCommands.PersonQueryPoll((ActorRef) replyTo), duration));
+    private Mono<PersonDetails[]> getAll(List<String> ids) {
+        return toMono(getShard().ask((replyTo) -> new PersonCommands.PersonQueryPoll((ActorRef) replyTo, ids), duration));
     }
 }

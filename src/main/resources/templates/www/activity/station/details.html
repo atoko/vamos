@@ -3,51 +3,136 @@
     <body>
         <header th:replace="views/clamp.html :: header"/>
         <section
-            class="usa-section grid-container"
-            th:object="${_activity_details}"
+            class="grid-container"
+            th:object="${_station_details}"
         >
-            <div class="grid-row">
+            <div id="station_header" class="grid-row">
                 <div style="flex-grow:1;align-self:center">
-                    <span>Viewing Activity</span>
+                    <h3 th:text="${_activity_details.name}"></h3>
                     <h2 class="margin-top-1em" th:text="*{getName()}"/>
                 </div>
-                <div>
-                    <span>You have not joined this activity</span>
-                </div>
             </div>
-            <div class="usa-accordion">
+            <div id="team_members_accordion" class="usa-accordion usa-accordion--bordered">
                 <h2 class="usa-accordion__heading">
-                    <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button">
-                        Stations
+                    <button aria-controls="a1" aria-expanded="true" class="usa-accordion__button bg-accent-cool-light">
+                        Assigned Team Member
                     </button>
                 </h2>
                 <div class="usa-accordion__content usa-prose" id="a1">
-                    <div class="grid-row grid-gap-05"  style="padding-left:1em">
+                    <div style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
                             <tr>
-                                <th>Name</th>
+                                <th class="grid-col-3">Last Name</th>
+                                <th class="grid-col-auto">First Name</th>
                                 <th style="text-align:right">
-                                    <a style="align-self: center" th:href="@{/www/activity/station/create}">
-                                        <button class="usa-button">
-                                            <span class="usa-">Add</span>
+                                    <form method="post"
+                                          style="align-self: center"
+                                          th:action="@{'/www/activity/details/station/assign/'}">
+                                        <input aria-required="true"
+                                               class="usa-input"
+                                               name="_activityId$$"
+                                               required
+                                               type="hidden"
+                                               th:value="${_activity_activityId$$}"
+                                        >
+                                        <input aria-required="true"
+                                               class="usa-input"
+                                               name="_stationId$$"
+                                               required
+                                               type="hidden"
+                                               th:value="${_station_stationId$$}"
+                                        >
+                                        <select>
+                                            <th:block th:each="personId : ${_activity_details.personIds}">
+                                                <option th:value="${personId}" th:text="${personId}"></option>
+                                            </th:block>
+                                        </select>
+                                        <button type="submit" class="usa-button">
+                                            <span>Assign</span>
                                         </button>
-                                    </a>
+                                    </form>
                                 </th>
 
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="station : *{stations}">
-                                <td>
-                                    <a th:href="@{'/www/activity/details/'+*{activity.getActivityId()}}">
-                                        <span th:text="*{station.name}"></span>
-                                    </a>
-                                </td>
-                            </tr>
+                                <th:block
+                                        th:if="*{assignedPersonId != null}"
+                                        th:object="${_person_map.get(_station_details.assignedPersonId.personId)}"
+                                >
+                                    <td>
+                                        <span th:text="*{getLastName()}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:text="*{getFirstName()}"></span>
+                                    </td>
+                                    <td></td>
+                                </th:block>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+            <div id="queue_accordion" class="usa-accordion usa-accordion--bordered">
+                <h2 class="usa-accordion__heading">
+                    <button aria-controls="a2" aria-expanded="true" class="usa-accordion__button bg-accent-cool-light">
+                        Queue
+                    </button>
+                </h2>
+                <div class="usa-accordion__content usa-prose" id="a2">
+                    <div style="padding-left:1em">
+                        <table class="usa-table usa-table--borderless width-full">
+                            <thead>
+                            <tr>
+                                <th class="grid-col-1">#</th>
+                                <th class="grid-col-3">Last name</th>
+                                <th class="grid-col-auto">First name</th>
+                                <th style="text-align:right">
+                                    <form method="post"
+                                          style="align-self: center"
+                                          th:action="@{'/www/activity/details/station/join/' }">
+                                        <input aria-required="true"
+                                               class="usa-input"
+                                               name="_activityId$$"
+                                               required
+                                               type="hidden"
+                                               th:value="${_activity_activityId$$}"
+                                        >
+                                        <input aria-required="true"
+                                               class="usa-input"
+                                               name="_stationId$$"
+                                               required
+                                               type="hidden"
+                                               th:value="${_station_stationId$$}"
+                                        >
+                                        <button type="submit" class="usa-button">
+                                            <span>Join Queue</span>
+                                        </button>
+                                    </form>
+                                </th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="queuedPersonId, iteration : *{queue}">
+                                    <th:block th:object="${_person_map.get(queuedPersonId.personId)}">
+                                        <td>
+                                            <span th:text="${iteration.index}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="*{getLastName()}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="*{getFirstName()}"></span>
+                                        </td>
+                                        <td></td>
+                                    </th:block>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
     </body>

@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Priority;
 import java.security.Principal;
+import java.util.List;
 
 @ControllerAdvice
 @Priority(100)
@@ -39,13 +40,13 @@ public class AuthenticationStore {
         Boolean isLoggingOut = serverWebExchange.getRequest().getPath().value().contains("/www/logout");
 
         if (!isLoggingOut && principal != null) {
-            return personQueryController.getPerson(principal.getName())
+            return personQueryController.getPerson(List.of(principal.getName()))
                     .doOnError((ex) -> {
                         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                         throw new FrontendException(cause, "/www/logout");
                     })
                     .map((getResponse) -> {
-                        return (PersonDetails) getResponse.getBody().get("data");
+                        return getResponse.getBody().get("data").get(0);
                     });
         } else {
             return null;

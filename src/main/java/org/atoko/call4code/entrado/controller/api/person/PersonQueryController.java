@@ -14,6 +14,7 @@ import org.thymeleaf.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController()
@@ -24,24 +25,24 @@ public class PersonQueryController {
     private PersonService personService;
 
     @GetMapping("/person")
-    public Mono<ResponseEntity<Map<String, Object>>> getPerson(
-            @RequestParam(value = "filter.personId", required = false) String id
+    public Mono<ResponseEntity<Map<String, List<PersonDetails>>>> getPerson(
+            @RequestParam(value = "filter.personId", required = false) List<String> ids
     ) {
-        return personService.get(id).map((personList -> {
-            if (!StringUtils.isEmpty(id)) {
-                if (personList.isEmpty()) {
-                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND");
-                }
-
-                PersonDetails person = personList.get(0);
-                if (person instanceof PersonDetails.PersonNullDetails) {
-                    throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND");
-                }
-
-                return ResponseEntity.ok(Collections.singletonMap("data", personList.get(0)));
-            } else {
-                return ResponseEntity.ok(Collections.singletonMap("data", personList));
+        if (ids == null) {
+            ids = Collections.emptyList();
+        }
+        List<String> finalIds = ids;
+        return personService.get(ids).map((personList -> {
+            if (personList.isEmpty()) {
+                throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND");
             }
+
+            PersonDetails person = personList.get(0);
+            if (person instanceof PersonDetails.PersonNullDetails) {
+                throw new ResponseCodeException(HttpStatus.NOT_FOUND, "PERSON_NOT_FOUND");
+            }
+
+            return ResponseEntity.ok(Collections.singletonMap("data", personList));
         }));
     }
 }

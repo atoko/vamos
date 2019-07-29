@@ -2,12 +2,12 @@
     <head th:replace="views/includes.html :: head"><head>
     <body>
         <header th:replace="views/clamp.html :: header"/>
-        <section class="usa-section grid-container">
-            <div class="grid-row" style="margin-bottom:-2em">
+        <section class="grid-container">
+            <div class="grid-row">
                 <h2 style="flex-grow: 1">Activities</h2>
                 <a style="align-self: center" th:href="@{/www/activity/create}">
                     <button class="usa-button">
-                        <span class="usa-">Add</span>
+                        <span>Add</span>
                     </button>
                 </a>
             </div>
@@ -18,7 +18,7 @@
                     </div>
                 </th:block>
                 <th:block th:unless="${hasActivities}">
-                    <div class="grid-row"  style="padding-left:1em">
+                    <div class="grid-row" style="padding-left:1em">
                         <table class="usa-table usa-table--borderless width-full">
                             <thead>
                             <tr>
@@ -28,7 +28,7 @@
                             <tbody>
                             <tr th:each="activity : ${_activity_activities}">
                                 <td>
-                                    <a th:href="@{'/www/activity/details/'+*{activity.getActivityId()}}">
+                                    <a th:href="@{'/www/activity/details/' + *{activity.getActivityId()}}">
                                         <span th:text="*{activity.name}"></span>
                                     </a>
                                 </td>

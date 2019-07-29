@@ -11,8 +11,10 @@ import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 public class PersonManager extends EventSourcedEntity<
         PersonCommands.Command, PersonEvents.Event, PersonManager.State
@@ -66,8 +68,13 @@ public class PersonManager extends EventSourcedEntity<
                 .onCommand(PersonCommands.PersonQueryPoll.class,
                         (state, poll) -> {
                             return Effect().none().thenRun(() -> {
+                                Collection<PersonDetails> details = state.map.values();
+                                if (poll.ids.size() > 0) {
+                                    details = details.stream().filter((personDetails1 ->
+                                            poll.ids.contains(personDetails1.personId))).collect(Collectors.toList());
+                                }
                                 poll.replyTo.tell(
-                                        state.map.values().toArray(personDetails)
+                                        details.toArray(personDetails)
                                 );
                             });
                         })

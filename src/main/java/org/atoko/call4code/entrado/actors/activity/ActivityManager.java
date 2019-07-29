@@ -63,6 +63,7 @@ public class ActivityManager extends EventSourcedEntity<
                                 .ifPresentOrElse((action) -> {
                                     ActorRef child = (ActorRef) action;
                                     child.tell(command);
+
                                     if (command instanceof ActivityCommands.ActivityStationCreateCommand) {
                                         event.set(new ActivityEvents.ActivityStationCreatedEvent((ActivityCommands.ActivityStationCreateCommand)command));
                                     }
@@ -122,33 +123,36 @@ public class ActivityManager extends EventSourcedEntity<
 
 
         public ActivityManager.State handle(ActivityEvents.ActivityCreatedEvent event) {
-            map.put(event.activityId, new ActivityDetails(
-                    event.deviceId,
-                    event.activityId,
-                    event.name,
-                    Collections.EMPTY_LIST
-            ));
+            if (!map.containsKey(event.activityId)) {
+                map.put(event.activityId, new ActivityDetails(
+                        event.deviceId,
+                        event.activityId,
+                        event.name,
+                        Collections.EMPTY_LIST
+                ));
 
-            actorContext.spawn(
-                    ActivityActor.behavior(event),
-                    ActivityActor.getEntityId(event.deviceId, event.activityId)
-            ).tell(new ActivityCommands.ActivityGenesis(event));
+                actorContext.spawn(
+                        ActivityActor.behavior(event),
+                        ActivityActor.getEntityId(event.deviceId, event.activityId)
+                ).tell(new ActivityCommands.ActivityGenesis(event));
+
+            }
 
             return new ActivityManager.State(this.map);
         }
 
         public ActivityManager.State handle(ActivityEvents.ActivityStationEvent event) {
-            actorContext.getChild(event.command.activityId).ifPresent( action -> {
+            actorContext.getChild(event.activityId).ifPresent( action -> {
                 ActorRef child = (ActorRef) action;
-                child.tell(event.command);
+                child.tell(ActivityCommands.fromEvent(event));
             });
             return this;
         }
 
         public ActivityManager.State handle(ActivityEvents.ActivityJoinedEvent event) {
-            actorContext.getChild(event.command.activityId).ifPresent( action -> {
+            actorContext.getChild(event.activityId).ifPresent( action -> {
                 ActorRef child = (ActorRef) action;
-                child.tell(event.command);
+                child.tell(ActivityCommands.fromEvent(event));
             });
             return this;
         }

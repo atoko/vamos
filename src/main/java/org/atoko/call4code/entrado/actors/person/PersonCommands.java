@@ -4,6 +4,8 @@ import akka.actor.typed.ActorRef;
 import lombok.Data;
 import org.atoko.call4code.entrado.model.details.PersonDetails;
 
+import java.util.List;
+
 public class PersonCommands {
     public static class Command {
     }
@@ -46,9 +48,11 @@ public class PersonCommands {
     @Data
     public static class PersonQueryPoll extends Command {
         ActorRef<PersonDetails[]> replyTo;
+        List<String> ids;
 
-        public PersonQueryPoll(ActorRef<PersonDetails[]> replyTo) {
+        public PersonQueryPoll(ActorRef<PersonDetails[]> replyTo, List<String> ids) {
             this.replyTo = replyTo;
+            this.ids = ids;
         }
     }
 

@@ -1,18 +1,27 @@
 <html xmlns:th="http://www.w3.org/1999/xhtml">
 <head th:replace="views/includes.html :: head">
-    <head>
 <body>
 <header th:replace="views/clamp.html :: header"/>
-<h2>Create an Activity</h2>
-<form action="/www/activity/create/post" class="usa-form" method="post">
-    <fieldset class="usa-fieldset">
-        <legend class="usa-legend">Details</legend>
+<section class="grid-container">
+    <h2 style="flex-grow: 1">Editing Activity</h2>
+    <form action="/www/activity/details/station/create/post" class="usa-form" method="post">
+        <fieldset class="usa-fieldset">
+            <legend class="usa-legend">Create a Station</legend>
 
-        <label class="usa-label" for="name">Name</label>
-        <input aria-required="true" class="usa-input" personEntity="name" name="name" required type="text">
+            <label class="usa-label" for="name">Name</label>
+            <input aria-required="true" class="usa-input" id="name" name="name" required type="text">
+            <input aria-required="true"
+                   class="usa-input"
+                   id="_activityId$$"
+                   name="_activityId$$"
+                   required
+                   type="hidden"
+                   th:value="${_activity_activityId$$}"
+            >
 
-        <input class="usa-button" type="submit" value="Create">
-    </fieldset>
-</form>
+            <input class="usa-button" type="submit" value="Submit">
+        </fieldset>
+    </form>
+</section>
 </body>
 </html>

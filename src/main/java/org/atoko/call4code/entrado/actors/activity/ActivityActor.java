@@ -9,11 +9,9 @@ import akka.persistence.typed.javadsl.CommandHandler;
 import akka.persistence.typed.javadsl.EventHandler;
 import lombok.Data;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
+import org.atoko.call4code.entrado.model.identifiers.PersonIdentifier;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class ActivityActor extends EventSourcedEntity<
         ActivityCommands.Command, ActivityEvents.Event, ActivityActor.State
@@ -33,6 +31,8 @@ public class ActivityActor extends EventSourcedEntity<
         return Behaviors.setup(actorContext -> new ActivityActor(event));
     }
 
+    Set<String> eventsSeen = new HashSet<>();
+
     @Override
     public State emptyState() {
         return new State();
@@ -49,22 +49,39 @@ public class ActivityActor extends EventSourcedEntity<
                         })
                 .onCommand(ActivityCommands.ActivityJoinCommand.class,
                         command -> {
-                            this._state = new State(_state, new ActivityEvents.ActivityJoinedEvent(command));
+                            if (!eventsSeen.contains(command.commandGuid)) {
+                                this._state = new State(_state, new ActivityEvents.ActivityJoinedEvent(command));
+                                this.eventsSeen.add(command.commandGuid);
+                            }
                             return Effect().none().thenRun(() -> {
-                                command.replyTo.tell(new ActivityDetails(_state));
+                                if (command.replyTo != null) {
+                                    command.replyTo.tell(new ActivityDetails(_state));
+                                }
                             });
                         })
-                .onCommand(ActivityCommands.ActivityStationCreateCommand.class,
+                .onCommand(ActivityCommands.ActivityStationTargetedCommand.class,
                         command -> {
-                            this._state = new State(_state, new ActivityEvents.ActivityStationCreatedEvent(command));
+                            if (!eventsSeen.contains(command.commandGuid)) {
+                                this._state = new State(_state, ActivityEvents.fromCommand(command));
+                                this.eventsSeen.add(command.commandGuid);
+                            }
                             return Effect().none().thenRun(() -> {
-                                command.replyTo.tell(new ActivityDetails(_state));
+                                if (command.replyTo != null) {
+                                    command.replyTo.tell(new ActivityDetails(_state));
+                                }
                             });
                         })
                 .onCommand(ActivityCommands.ActivityDetailsPoll.class,
                         (state, command) -> Effect().none()
-                                .thenRun(() -> command.replyTo.tell(new ActivityDetails(_state)))
+                                .thenRun(() -> {
+                                    if (command.replyTo != null) {
+                                        command.replyTo.tell(new ActivityDetails(_state));
+                                    }
+                                })
                 )
+                .onCommand(ActivityCommands.Command.class, () -> {
+                    return Effect().none();
+                })
                 .build();
     }
 
@@ -80,8 +97,8 @@ public class ActivityActor extends EventSourcedEntity<
         public PersistenceId deviceId;
         public PersistenceId activityId;
         public String name;
-        public List<String> personIds;
-        public Map<String, ActivityStationState> stations;
+        public List<PersonIdentifier> personIds = new LinkedList<>();
+        public Map<String, ActivityStationState> stations = new WeakHashMap<>();
 
         public State() {
         }
@@ -99,8 +116,11 @@ public class ActivityActor extends EventSourcedEntity<
             this.activityId = state.activityId;
             this.name = state.name;
 
-            state.personIds.add(event.command.personId);
+            if (!state.personIds.contains(event.personId)) {
+                state.personIds.add(event.personId);
+            }
             this.personIds = new LinkedList<>(state.personIds);
+            this.stations = new WeakHashMap<>(state.stations);
         }
 
         public State(State state, ActivityEvents.ActivityStationEvent activityStationEvent) {
@@ -109,7 +129,17 @@ public class ActivityActor extends EventSourcedEntity<
             this.name = state.name;
 
             ActivityStationState station = state.stations.get(activityStationEvent.stationId);
-            state.stations.put(activityStationEvent.stationId, new ActivityStationState(station, activityStationEvent));
+            if (station != null) {
+                state.stations.put(
+                        activityStationEvent.stationId,
+                        new ActivityStationState(station, activityStationEvent)
+                );
+            } else {
+                state.stations.put(
+                        activityStationEvent.stationId,
+                        new ActivityStationState(ActivityStationState.empty, activityStationEvent)
+                );
+            }
             this.stations = new WeakHashMap<>(state.stations);
         }
 

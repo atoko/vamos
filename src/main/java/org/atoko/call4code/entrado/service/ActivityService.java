@@ -7,6 +7,7 @@ import org.atoko.call4code.entrado.actors.activity.ActivityCommands;
 import org.atoko.call4code.entrado.actors.activity.ActivityManager;
 import org.atoko.call4code.entrado.actors.person.PersonActor;
 import org.atoko.call4code.entrado.model.details.ActivityDetails;
+import org.atoko.call4code.entrado.model.identifiers.PersonIdentifier;
 import org.atoko.call4code.entrado.service.meta.ActorSystemService;
 import org.atoko.call4code.entrado.service.meta.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,7 @@ public class ActivityService {
                 new ActivityCommands.ActivityJoinCommand(
                         (ActorRef) replyTo,
                         ActivityActor.getEntityId(deviceService.getDeviceId(), activityId),
-                        PersonActor.getEntityId(deviceService.getDeviceId(), personId)
+                        new PersonIdentifier(deviceService.getDeviceId(), personId)
                 ), duration));
     }
 

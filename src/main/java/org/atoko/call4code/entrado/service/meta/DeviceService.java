@@ -1,6 +1,7 @@
 package org.atoko.call4code.entrado.service.meta;
 
 import org.springframework.stereotype.Component;
+import org.thymeleaf.util.StringUtils;
 import oshi.SystemInfo;
 
 @Component
@@ -10,6 +11,12 @@ public class DeviceService {
 
     public DeviceService() {
 
+    }
+
+    {
+        if (StringUtils.isEmpty(serial)) {
+            serial = systemInfo.getHardware().getNetworkIFs()[0].getMacaddr();
+        }
     }
 
     public String getDeviceId() {

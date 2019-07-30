@@ -34,17 +34,8 @@ regardless of size, location or complexity.
 incident management activities.
 - Provide a common standard for overall incident management. 
 
-# Notes
+## Installation
+If you wish to run your own Vamos node, you will need an environment running Java 11 and a Postgres database with a specific schema.
 
-- Everything is saved to an in-memory database.
-- Tested with Google Chrome 
-
-### Future implementation
-
-- Operationalization
-	- Provisioning
-	- Clustering
-- Persistent storage	
-- Scheduling and Queues 
-- Procurement and Inventory 
-
+### Database Schema
+Please see akka-persistence-postgresql

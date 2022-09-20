@@ -50,10 +50,10 @@ public class ActivityCommands {
     }
 
     @Data
-    public static class ActivityGenesis extends Command {
+    public static class Activity extends Command {
         ActivityEvents.ActivityCreatedEvent event;
 
-        public ActivityGenesis(ActivityEvents.ActivityCreatedEvent event) {
+        public Activity(ActivityEvents.ActivityCreatedEvent event) {
             this.event = event;
         }
     }

@@ -5,8 +5,8 @@ import akka.cluster.sharding.typed.javadsl.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.atoko.call4code.entrado.actors.activity.ActivityManager;
-import org.atoko.call4code.entrado.actors.meta.DeviceSupervisor;
-import org.atoko.call4code.entrado.actors.meta.GenesisBehavior;
+import org.atoko.call4code.entrado.actors.control.DeviceSupervisor;
+import org.atoko.call4code.entrado.actors.control.BehaviorFactory;
 import org.atoko.call4code.entrado.actors.person.PersonManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +24,7 @@ public class ActorSystemService {
 
     public ActorSystemService(@Autowired DeviceService deviceService) {
         Config completeConfig = ConfigFactory.load();
-        this.actorSystem = ActorSystem.create(GenesisBehavior.main, "root-system", completeConfig);
+        this.actorSystem = ActorSystem.create(BehaviorFactory.main, "root-system", completeConfig);
         this.clusterSharding = ClusterSharding.get(actorSystem);
         this.deviceService = deviceService;
     }

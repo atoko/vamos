@@ -41,7 +41,7 @@ public class PersonActor extends EventSourcedEntity<
     public CommandHandler<PersonCommands.Command, PersonEvents.Event, PersonActor.State> commandHandler() {
         return newCommandHandlerBuilder()
                 .forAnyState()
-                .onCommand(PersonCommands.PersonGenesis.class, (state, command) -> {
+                .onCommand(PersonCommands.PersonRegister.class, (state, command) -> {
                     this._state = new State(command.event);
                     return Effect().none();
                 })
@@ -77,9 +77,6 @@ public class PersonActor extends EventSourcedEntity<
             this.pin = event.pin;
         }
 
-        public static PersonActor.State inception(PersonEvents.PersonCreatedEvent event) {
-            return new PersonActor.State(event);
-        }
     }
 
 }

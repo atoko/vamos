@@ -66,10 +66,11 @@ public class JwtTools {
     }
 
     public boolean isTokenValid(String token) {
-        return !isTokenExpired(token) && parser().isSigned(token);
+        return !isTokenExpired(token) && parser().require("alg", "hs256").isSigned(token);
     }
 
     public String generateToken(User user) {
+
         Date created = new Date();
         Date expiration = new Date(created.getTime() + getExpiration() * 1000);
 

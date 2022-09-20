@@ -120,7 +120,7 @@ public class PersonManager extends EventSourcedEntity<
             actorContext.spawn(
                     PersonActor.behavior(event),
                     PersonActor.getEntityId(event.deviceId, event.personId)
-            ).tell(new PersonCommands.PersonGenesis(event));
+            ).tell(new PersonCommands.PersonRegister(event));
 
             return new State(this.map);
         }

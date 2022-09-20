@@ -11,10 +11,10 @@ public class PersonCommands {
     }
 
     @Data
-    public static class PersonGenesis extends Command {
+    public static class PersonRegister extends Command {
         PersonEvents.PersonCreatedEvent event;
 
-        public PersonGenesis(PersonEvents.PersonCreatedEvent event) {
+        public PersonRegister(PersonEvents.PersonCreatedEvent event) {
             this.event = event;
         }
     }

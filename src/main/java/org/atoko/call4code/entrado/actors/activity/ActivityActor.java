@@ -42,7 +42,7 @@ public class ActivityActor extends EventSourcedEntity<
     public CommandHandler<ActivityCommands.Command, ActivityEvents.Event, State> commandHandler() {
         return newCommandHandlerBuilder()
                 .forAnyState()
-                .onCommand(ActivityCommands.ActivityGenesis.class,
+                .onCommand(ActivityCommands.Activity.class,
                         command -> {
                             this._state = new State(command.event);
                             return Effect().none();

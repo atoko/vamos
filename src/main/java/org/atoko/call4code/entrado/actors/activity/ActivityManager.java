@@ -134,7 +134,7 @@ public class ActivityManager extends EventSourcedEntity<
                 actorContext.spawn(
                         ActivityActor.behavior(event),
                         ActivityActor.getEntityId(event.deviceId, event.activityId)
-                ).tell(new ActivityCommands.ActivityGenesis(event));
+                ).tell(new ActivityCommands.Activity(event));
 
             }
 
